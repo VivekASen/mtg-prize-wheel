@@ -1,0 +1,45 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MTG Birthday Prize Wheel</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <h1>MTG Birthday Prize Wheel</h1>
+    <div id="nameEntry">
+      <input type="text" id="playerName" placeholder="Enter your name" />
+      <button onclick="submitName()">Start</button>
+    </div>
+
+    <div id="secretMission" class="hidden"></div>
+
+    <div id="missionTracker" class="hidden">
+      <h2>Complete a Mission to Unlock the Wheel</h2>
+      <ul id="missionList"></ul>
+    </div>
+
+    <div id="prizeInput" class="hidden">
+      <h2>Enter Prizes</h2>
+      <textarea id="prizeList" placeholder="One prize per line..."></textarea>
+      <input type="file" id="uploadFile" />
+      <button onclick="loadPrizes()">Load Prizes</button>
+    </div>
+
+    <div id="wheelSection" class="hidden">
+      <h2>Spin the Wheel</h2>
+      <button onclick="spinWheel()">🎡 Spin</button>
+      <p id="result"></p>
+    </div>
+
+    <div id="secretComplete" class="hidden">
+      <button onclick="bonusSpin()">✅ I Completed My Secret Mission</button>
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
