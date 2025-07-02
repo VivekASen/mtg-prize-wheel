@@ -100,7 +100,7 @@ function bonusSpin() {
 }
 
 function sendToDiscord(name, prize) {
-  const webhook = "YOUR_DISCORD_WEBHOOK_URL";
+  const webhook = "https://discord.com/api/webhooks/1389982891068625048/6fALsoRxeELHOP2vFKRpgaSRPlyNncnIDG5EejlNp6eI177xa8g9UeGLGl_llCLXBoFx";
   if (webhook.includes("YOUR")) return;
   fetch(webhook, {
     method: "POST",
