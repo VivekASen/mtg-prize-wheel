@@ -1,4 +1,4 @@
-import { dbRefs, set, get, update, child } from './firebaseconfig.js';
+import { dbRefs, set, get, update, onValue } from './firebaseconfig.js';
 
 const spinWebhook = 'YOUR_DISCORD_WEBHOOK_URL_FOR_SPINS';
 const missionWebhook = 'YOUR_DISCORD_WEBHOOK_URL_FOR_MISSIONS';
@@ -9,6 +9,8 @@ let canvas, ctx;
 let angle = 0;
 let spinning = false;
 let spinVelocity = 0;
+let secretCompleted = false;
+let secretPrize = null;
 
 const regularMissions = [
   "Command Performance – Cast your commander",
@@ -71,6 +73,7 @@ window.startApp = async function () {
     return;
   }
 
+  // Get secret mission assignment
   const snapshot = await get(dbRefs.assignedMissions);
   const allAssignments = snapshot.exists() ? snapshot.val() : {};
   if (!allAssignments[playerName]) {
@@ -83,11 +86,18 @@ window.startApp = async function () {
     secretMission = allAssignments[playerName];
   }
 
+  // Check if secret mission was completed
+  const completedSnap = await get(dbRefs.secretMissionCompletions);
+  const completedData = completedSnap.exists() ? completedSnap.val() : {};
+  secretCompleted = completedData[playerName] ? true : false;
+  secretPrize = completedData[playerName]?.prize || null;
+
+  // Mission list loading
   const missionList = document.getElementById('missionList');
   missionList.innerHTML = '';
 
-  const checksSnapshot = await get(child(dbRefs.playerChecks, playerName));
-  const savedChecks = checksSnapshot.exists() ? checksSnapshot.val() : [];
+  const checksSnapshot = await get(dbRefs.playerChecks);
+  const savedChecks = checksSnapshot.exists() && checksSnapshot.val()[playerName] ? checksSnapshot.val()[playerName] : [];
 
   regularMissions.forEach((mission, i) => {
     const item = document.createElement('div');
@@ -101,7 +111,11 @@ window.startApp = async function () {
       allCheckboxes.forEach((cb, idx) => {
         if (cb.checked) updatedChecks.push(idx);
       });
-      await set(child(dbRefs.playerChecks, playerName), updatedChecks);
+
+      const allChecks = await get(dbRefs.playerChecks);
+      const newState = allChecks.exists() ? allChecks.val() : {};
+      newState[playerName] = updatedChecks;
+      await set(dbRefs.playerChecks, newState);
 
       if (updatedChecks.length > 0) {
         document.getElementById('spinSection').classList.remove('hidden');
@@ -121,26 +135,91 @@ window.startApp = async function () {
   document.getElementById('secretMission').classList.remove('hidden');
   document.getElementById('missionTracker').classList.remove('hidden');
 
+  const secretBtn = document.getElementById('secretCompleteBtn');
+  const backBtn = document.getElementById('backToMissions');
+
+  if (secretCompleted) {
+    secretBtn.disabled = true;
+    secretBtn.textContent = `✅ Secret Mission Complete`;
+    document.getElementById('spinSection').classList.remove('hidden');
+    initCanvas();
+    drawWheel();
+    if (secretPrize) {
+      document.getElementById('prizeReveal').innerText = `🎉 You won: ${secretPrize}`;
+    }
+  }
+
   if (savedChecks.length > 0) {
     document.getElementById('spinSection').classList.remove('hidden');
     initCanvas();
     drawWheel();
   }
+
+  backBtn.classList.add('hidden');
+  backBtn.onclick = () => {
+    document.getElementById('missionTracker').classList.remove('hidden');
+    document.getElementById('spinSection').classList.add('hidden');
+    backBtn.classList.add('hidden');
+  };
 };
 
 window.completeMission = async function () {
+  if (secretCompleted) return;
+
+  const snapshot = await get(dbRefs.prizes);
+  if (!snapshot.exists()) return;
+
+  const prizes = snapshot.val();
+  const randomIndex = Math.floor(Math.random() * prizes.length);
+  const prize = prizes.splice(randomIndex, 1)[0];
+
+  const claimedSnapshot = await get(dbRefs.claimed);
+  const claimed = claimedSnapshot.exists() ? claimedSnapshot.val() : [];
+  claimed.push({ name: playerName, prize });
+
+  await set(dbRefs.prizes, prizes);
+  await set(dbRefs.claimed, claimed);
+  await update(dbRefs.secretMissionCompletions, { [playerName]: { prize } });
+
   document.getElementById('missionTracker').classList.add('hidden');
   document.getElementById('spinSection').classList.remove('hidden');
+  document.getElementById('backToMissions').classList.remove('hidden');
+  document.getElementById('secretCompleteBtn').disabled = true;
+  document.getElementById('secretCompleteBtn').textContent = `✅ Secret Mission Complete`;
+  document.getElementById('prizeReveal').innerText = `🎉 You won: ${prize}`;
+  initCanvas();
+  drawWheel();
 
   await fetch(missionWebhook, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ content: `✅ **${playerName}** completed their secret mission: "${secretMission}"` })
+    body: JSON.stringify({ content: `✅ **${playerName}** completed their secret mission: "${secretMission}" and won: **${prize}**` })
   });
-
-  initCanvas();
-  drawWheel();
 };
+
+window.spinWheel = async function () {
+  if (spinning) return;
+  const snapshot = await get(dbRefs.prizes);
+  if (!snapshot.exists()) return;
+
+  spinning = true;
+  spinVelocity = 0.2 + Math.random() * 0.1;
+  initCanvas();
+  animateWheel();
+};
+
+function animateWheel() {
+  if (!spinning) return;
+  angle += spinVelocity;
+  spinVelocity *= 0.98;
+  if (spinVelocity < 0.002) {
+    spinning = false;
+    revealPrize();
+    return;
+  }
+  drawWheel();
+  requestAnimationFrame(animateWheel);
+}
 
 async function drawWheel() {
   const snapshot = await get(dbRefs.prizes);
@@ -177,30 +256,6 @@ async function drawWheel() {
 
   ctx.restore();
 }
-
-function animateWheel() {
-  if (!spinning) return;
-  angle += spinVelocity;
-  spinVelocity *= 0.98;
-  if (spinVelocity < 0.002) {
-    spinning = false;
-    revealPrize();
-    return;
-  }
-  drawWheel();
-  requestAnimationFrame(animateWheel);
-}
-
-window.spinWheel = async function () {
-  if (spinning) return;
-  const snapshot = await get(dbRefs.prizes);
-  if (!snapshot.exists()) return;
-
-  spinning = true;
-  spinVelocity = 0.2 + Math.random() * 0.1;
-  initCanvas();
-  animateWheel();
-};
 
 async function revealPrize() {
   const prizesSnapshot = await get(dbRefs.prizes);
