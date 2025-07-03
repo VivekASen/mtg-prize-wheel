@@ -11,6 +11,7 @@ let spinning = false;
 let spinVelocity = 0;
 let secretCompleted = false;
 let secretPrize = null;
+let eligibleForSecretSpin = false;
 
 const regularMissions = [
   "Command Performance – Cast your commander",
@@ -41,7 +42,7 @@ const regularMissions = [
 ];
 
 const secretMissions = [
-  "Secretly try to move your playmat away from everyone slowly till someone realizes. Based on how far you are from your original location, the number of inches you’ve moved is how many spins you get",
+  "Secretly try to move your playmat away from everyone slowly till someone realizes...",
   "Slowly add random tokens (not yours) to your battlefield...",
   "Quote the flavor text of a card as if it were advice...",
   "Make up a fake rule and get someone to believe it...",
@@ -73,7 +74,7 @@ window.startApp = async function () {
     return;
   }
 
-  // Get secret mission assignment
+  // Assign secret mission if not already assigned
   const snapshot = await get(dbRefs.assignedMissions);
   const allAssignments = snapshot.exists() ? snapshot.val() : {};
   if (!allAssignments[playerName]) {
@@ -89,21 +90,15 @@ window.startApp = async function () {
   // Check if secret mission was completed
   const completedSnap = await get(dbRefs.secretMissionCompletions);
   const completedData = completedSnap.exists() ? completedSnap.val() : {};
-  secretCompleted = !!completedData[playerName];
+  secretCompleted = completedData[playerName] ? true : false;
   secretPrize = completedData[playerName]?.prize || null;
 
-  // Mission list loading
+  // Load regular mission progress
   const missionList = document.getElementById('missionList');
   missionList.innerHTML = '';
 
   const checksSnapshot = await get(dbRefs.playerChecks);
-  let savedChecks = [];
-  if (checksSnapshot.exists()) {
-    const val = checksSnapshot.val();
-    if (val && val[playerName]) {
-      savedChecks = val[playerName];
-    }
-  }
+  const savedChecks = checksSnapshot.exists() && checksSnapshot.val()[playerName] ? checksSnapshot.val()[playerName] : [];
 
   regularMissions.forEach((mission, i) => {
     const item = document.createElement('div');
@@ -118,12 +113,12 @@ window.startApp = async function () {
         if (cb.checked) updatedChecks.push(idx);
       });
 
-      const allChecks = await get(dbRefs.playerChecks);
-      const newState = allChecks.exists() ? allChecks.val() : {};
-      newState[playerName] = updatedChecks;
-      await set(dbRefs.playerChecks, newState);
+      const allChecks = checksSnapshot.exists() ? checksSnapshot.val() : {};
+      allChecks[playerName] = updatedChecks;
+      await set(dbRefs.playerChecks, allChecks);
 
       if (updatedChecks.length > 0) {
+        eligibleForSecretSpin = true;
         document.getElementById('spinSection').classList.remove('hidden');
         initCanvas();
         drawWheel();
@@ -137,6 +132,7 @@ window.startApp = async function () {
     missionList.appendChild(item);
   });
 
+  // UI updates
   document.getElementById('secretMission').innerText = `🎯 Secret Mission: ${secretMission}`;
   document.getElementById('secretMission').classList.remove('hidden');
   document.getElementById('missionTracker').classList.remove('hidden');
@@ -150,12 +146,11 @@ window.startApp = async function () {
     document.getElementById('spinSection').classList.remove('hidden');
     initCanvas();
     drawWheel();
-    if (secretPrize) {
-      document.getElementById('prizeReveal').innerText = `🎉 You won: ${secretPrize}`;
-    }
+    document.getElementById('prizeReveal').innerText = `🎉 You won: ${secretPrize}`;
   }
 
   if (savedChecks.length > 0) {
+    eligibleForSecretSpin = true;
     document.getElementById('spinSection').classList.remove('hidden');
     initCanvas();
     drawWheel();
@@ -187,6 +182,9 @@ window.completeMission = async function () {
   await set(dbRefs.claimed, claimed);
   await update(dbRefs.secretMissionCompletions, { [playerName]: { prize } });
 
+  secretCompleted = true;
+  secretPrize = prize;
+
   document.getElementById('missionTracker').classList.add('hidden');
   document.getElementById('spinSection').classList.remove('hidden');
   document.getElementById('backToMissions').classList.remove('hidden');
@@ -204,7 +202,7 @@ window.completeMission = async function () {
 };
 
 window.spinWheel = async function () {
-  if (spinning) return;
+  if (spinning || secretCompleted) return; // prevent spin if secret already completed
   const snapshot = await get(dbRefs.prizes);
   if (!snapshot.exists()) return;
 
@@ -225,6 +223,34 @@ function animateWheel() {
   }
   drawWheel();
   requestAnimationFrame(animateWheel);
+}
+
+async function revealPrize() {
+  const prizesSnapshot = await get(dbRefs.prizes);
+  const claimedSnapshot = await get(dbRefs.claimed);
+
+  let prizes = prizesSnapshot.exists() ? prizesSnapshot.val() : [];
+  let claimed = claimedSnapshot.exists() ? claimedSnapshot.val() : [];
+
+  const normalizedAngle = (2 * Math.PI - (angle % (2 * Math.PI))) % (2 * Math.PI);
+  const segmentAngle = (2 * Math.PI) / prizes.length;
+  const index = Math.floor(normalizedAngle / segmentAngle);
+  const prize = prizes.splice(index, 1)[0];
+
+  claimed.push({ name: playerName, prize });
+
+  await set(dbRefs.prizes, prizes);
+  await set(dbRefs.claimed, claimed);
+
+  document.getElementById('prizeReveal').innerText = `🎉 You won: ${prize}`;
+  document.getElementById('confettiCanvas').classList.remove('hidden');
+  confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+
+  fetch(spinWebhook, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content: `🎡 **${playerName}** spun the wheel and won: **${prize}**` })
+  });
 }
 
 async function drawWheel() {
@@ -261,34 +287,6 @@ async function drawWheel() {
   });
 
   ctx.restore();
-}
-
-async function revealPrize() {
-  const prizesSnapshot = await get(dbRefs.prizes);
-  const claimedSnapshot = await get(dbRefs.claimed);
-
-  let prizes = prizesSnapshot.exists() ? prizesSnapshot.val() : [];
-  let claimed = claimedSnapshot.exists() ? claimedSnapshot.val() : [];
-
-  const normalizedAngle = (2 * Math.PI - (angle % (2 * Math.PI))) % (2 * Math.PI);
-  const segmentAngle = (2 * Math.PI) / prizes.length;
-  const index = Math.floor(normalizedAngle / segmentAngle);
-  const prize = prizes.splice(index, 1)[0];
-
-  claimed.push({ name: playerName, prize });
-
-  await set(dbRefs.prizes, prizes);
-  await set(dbRefs.claimed, claimed);
-
-  document.getElementById('prizeReveal').innerText = `🎉 You won: ${prize}`;
-  document.getElementById('confettiCanvas').classList.remove('hidden');
-  confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-
-  fetch(spinWebhook, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ content: `🎡 **${playerName}** spun the wheel and won: **${prize}**` })
-  });
 }
 
 window.uploadPrizes = async function () {
