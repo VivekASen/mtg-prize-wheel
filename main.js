@@ -23,6 +23,13 @@ const secretMissions = [
   "Pretend to smell a deck or playmat, then nod."
 ];
 
+let angle = 0;
+let spinning = false;
+let spinVelocity = 0;
+
+const canvas = document.getElementById('wheelCanvas');
+const ctx = canvas.getContext('2d');
+
 // === INIT ===
 function startApp() {
   playerName = document.getElementById('playerName').value.trim();
@@ -36,7 +43,6 @@ function startApp() {
     return;
   }
 
-  // Assign secret mission
   secretMission = secretMissions[Math.floor(Math.random() * secretMissions.length)];
   document.getElementById('secretMission').innerText = `🎯 Secret Mission: ${secretMission}`;
   document.getElementById('secretMission').classList.remove('hidden');
@@ -47,29 +53,77 @@ function completeMission() {
   document.getElementById('missionTracker').classList.add('hidden');
   document.getElementById('spinSection').classList.remove('hidden');
 
-  // Notify Discord
   fetch(missionWebhook, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ content: `✅ **${playerName}** completed their secret mission: "${secretMission}"` })
   });
+  drawWheel();
+}
+
+function drawWheel() {
+  if (!canvas || !ctx || prizes.length === 0) return;
+
+  const radius = canvas.width / 2;
+  const segmentAngle = (2 * Math.PI) / prizes.length;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.translate(radius, radius);
+  ctx.rotate(angle);
+
+  prizes.forEach((prize, i) => {
+    const start = i * segmentAngle;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.arc(0, 0, radius, start, start + segmentAngle);
+    ctx.fillStyle = i % 2 === 0 ? '#f2c94c' : '#f2994a';
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.save();
+    ctx.rotate(start + segmentAngle / 2);
+    ctx.translate(radius * 0.6, 0);
+    ctx.rotate(Math.PI / 2);
+    ctx.fillStyle = '#000';
+    ctx.font = '14px sans-serif';
+    ctx.fillText(prize.substring(0, 12), -30, 0);
+    ctx.restore();
+  });
+
+  ctx.restore();
+}
+
+function animateWheel() {
+  if (!spinning) return;
+  angle += spinVelocity;
+  spinVelocity *= 0.98;
+  if (spinVelocity < 0.002) {
+    spinning = false;
+    revealPrize();
+    return;
+  }
+  drawWheel();
+  requestAnimationFrame(animateWheel);
 }
 
 function spinWheel() {
-  if (prizes.length === 0) {
-    document.getElementById('prizeReveal').innerText = '🎁 All prizes claimed!';
-    return;
-  }
+  if (spinning || prizes.length === 0) return;
+  spinning = true;
+  spinVelocity = 0.2 + Math.random() * 0.1;
+  animateWheel();
+}
 
-  const prizeIndex = Math.floor(Math.random() * prizes.length);
-  const prize = prizes.splice(prizeIndex, 1)[0];
+function revealPrize() {
+  const index = Math.floor((prizes.length - (angle / (2 * Math.PI)) * prizes.length) % prizes.length);
+  const prize = prizes.splice(index, 1)[0];
   claimed.push({ name: playerName, prize });
   localStorage.setItem('prizes', JSON.stringify(prizes));
   localStorage.setItem('claimed', JSON.stringify(claimed));
-
   document.getElementById('prizeReveal').innerText = `🎉 You won: ${prize}`;
+  document.getElementById('confettiCanvas').classList.remove('hidden');
+  confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
 
-  // Notify Discord
   fetch(spinWebhook, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -93,6 +147,7 @@ function resetPrizePool() {
   localStorage.removeItem('claimed');
   document.getElementById('prizeListInput').value = '';
   renderPrizeTables();
+  drawWheel();
 }
 
 function renderPrizeTables() {
@@ -101,4 +156,5 @@ function renderPrizeTables() {
 
   remainingDiv.innerHTML = `<h3>Remaining Prizes (${prizes.length})</h3><ul>${prizes.map(p => `<li>${p}</li>`).join('')}</ul>`;
   claimedDiv.innerHTML = `<h3>Claimed Prizes (${claimed.length})</h3><ul>${claimed.map(c => `<li>${c.name} won ${c.prize}</li>`).join('')}</ul>`;
+  drawWheel();
 }
