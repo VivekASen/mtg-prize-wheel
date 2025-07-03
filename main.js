@@ -1,4 +1,4 @@
-import { dbRefs, set, get, update, onValue, child } from './firebaseconfig.js';
+import { dbRefs, set, get, update } from './firebaseconfig.js';
 
 const spinWebhook = 'YOUR_DISCORD_WEBHOOK_URL_FOR_SPINS';
 const missionWebhook = 'YOUR_DISCORD_WEBHOOK_URL_FOR_MISSIONS';
@@ -85,25 +85,47 @@ window.startApp = async function () {
 
   const missionList = document.getElementById('missionList');
   missionList.innerHTML = '';
+
+  const checksSnapshot = await get(dbRefs.playerChecks.child(playerName));
+  const savedChecks = checksSnapshot.exists() ? checksSnapshot.val() : [];
+
   regularMissions.forEach((mission, i) => {
-  const item = document.createElement('div');
-  const checkbox = document.createElement('input');
-  checkbox.type = 'checkbox';
-  checkbox.addEventListener('change', () => {
-    document.getElementById('spinSection').classList.remove('hidden');
-    initCanvas();
-    drawWheel();
-  });
-  const label = document.createElement('label');
-  label.textContent = mission;
-  item.appendChild(checkbox);
-  item.appendChild(label);
-  missionList.appendChild(item);
+    const item = document.createElement('div');
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = savedChecks.includes(i);
+
+    checkbox.addEventListener('change', async () => {
+      const allCheckboxes = document.querySelectorAll('#missionList input');
+      const updatedChecks = [];
+      allCheckboxes.forEach((cb, idx) => {
+        if (cb.checked) updatedChecks.push(idx);
+      });
+      await set(dbRefs.playerChecks.child(playerName), updatedChecks);
+
+      if (updatedChecks.length > 0) {
+        document.getElementById('spinSection').classList.remove('hidden');
+        initCanvas();
+        drawWheel();
+      }
+    });
+
+    const label = document.createElement('label');
+    label.textContent = mission;
+    item.appendChild(checkbox);
+    item.appendChild(label);
+    missionList.appendChild(item);
   });
 
   document.getElementById('secretMission').innerText = `🎯 Secret Mission: ${secretMission}`;
   document.getElementById('secretMission').classList.remove('hidden');
   document.getElementById('missionTracker').classList.remove('hidden');
+
+  if (savedChecks.length > 0) {
+    document.getElementById('spinSection').classList.remove('hidden');
+    initCanvas();
+    drawWheel();
+  }
 };
 
 window.completeMission = async function () {
