@@ -28,6 +28,7 @@ const dbRefs = {
   claimed: ref(db, 'claimed'),
   assignedMissions: ref(db, 'assignedMissions'),
   playerChecks: ref(db, 'playerChecks'),
+  secretMissionCompletions: ref(db, 'secretMissionCompletions')
 };
 
 export { db, dbRefs, set, get, update, onValue, child };
