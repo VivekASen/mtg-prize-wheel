@@ -1,84 +1,88 @@
 body {
   font-family: 'Roboto', sans-serif;
-  background: #f9f3e9;
-  color: #2c1f23;
+  background-color: #f9f9f9;
   margin: 0;
-  padding: 0;
+  padding: 1rem;
+  text-align: center;
+  color: #333;
 }
 
-h1 {
+h1, h2 {
   font-family: 'Cinzel', serif;
-  font-size: 2.5rem;
-  text-align: center;
-  margin: 1rem 0;
-  color: #6b1e2f;
+  color: #222;
 }
 
 .container {
-  max-width: 800px;
-  margin: auto;
-  padding: 1rem;
-  background: #fffaf0;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 input[type="text"] {
-  width: 70%;
-  padding: 0.5rem;
-  font-size: 1rem;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  margin-right: 0.5rem;
+  padding: 0.7rem;
+  font-size: 1.1rem;
+  width: 90%;
+  margin-bottom: 1rem;
+  box-sizing: border-box;
 }
 
 button {
-  padding: 0.6rem 1rem;
-  font-size: 1rem;
-  background-color: #6b1e2f;
-  color: white;
+  padding: 0.8rem 1.2rem;
+  font-size: 1.1rem;
   border: none;
   border-radius: 8px;
+  background-color: #6c63ff;
+  color: white;
   cursor: pointer;
-  transition: background-color 0.3s;
+  margin-top: 0.5rem;
 }
 
 button:hover {
-  background-color: #8a2f40;
+  background-color: #574fd6;
+}
+
+canvas#wheelCanvas {
+  max-width: 90vw;
+  height: auto;
+  display: block;
+  margin: 1rem auto;
+  border: 2px solid #333;
+  border-radius: 10px;
+}
+
+canvas#confettiCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+  pointer-events: none;
+  z-index: 999;
+}
+
+#prizeReveal {
+  font-size: 1.2rem;
+  margin-top: 1rem;
+  font-weight: bold;
+}
+
+.scrollable-missions {
+  max-height: 40vh;
+  overflow-y: auto;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background: #fafafa;
+  text-align: left;
+}
+
+.scrollable-missions div {
+  margin-bottom: 0.5rem;
+}
+
+label {
+  margin-left: 0.5rem;
 }
 
 .hidden {
   display: none;
-}
-
-#secretMission, #prizeReveal {
-  margin: 1rem 0;
-  padding: 1rem;
-  background: #fff3cd;
-  border-left: 5px solid #ffa502;
-  border-radius: 6px;
-}
-
-#missionTracker, #spinSection, #adminPanel {
-  margin-top: 2rem;
-}
-
-textarea {
-  width: 100%;
-  height: 120px;
-  margin-top: 0.5rem;
-  margin-bottom: 1rem;
-  padding: 0.5rem;
-  border-radius: 6px;
-  font-family: monospace;
-}
-
-#remainingPrizes, #claimedPrizes {
-  background: #f4f4f4;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 1rem;
-  margin-top: 1rem;
-  max-height: 200px;
-  overflow-y: auto;
 }
