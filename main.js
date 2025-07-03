@@ -94,6 +94,10 @@ document.addEventListener('DOMContentLoaded', () => {
           .map((cb, idx) => cb.checked ? idx : null)
           .filter(x => x !== null);
         localStorage.setItem(`checks_${playerName}`, JSON.stringify(updated));
+
+        // Allow spin on every mission checked
+        document.getElementById('spinSection').classList.remove('hidden');
+        drawWheel();
       });
       const label = document.createElement('label');
       label.textContent = mission;
