@@ -86,14 +86,19 @@ window.startApp = async function () {
   const missionList = document.getElementById('missionList');
   missionList.innerHTML = '';
   regularMissions.forEach((mission, i) => {
-    const item = document.createElement('div');
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    const label = document.createElement('label');
-    label.textContent = mission;
-    item.appendChild(checkbox);
-    item.appendChild(label);
-    missionList.appendChild(item);
+  const item = document.createElement('div');
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.addEventListener('change', () => {
+    document.getElementById('spinSection').classList.remove('hidden');
+    initCanvas();
+    drawWheel();
+  });
+  const label = document.createElement('label');
+  label.textContent = mission;
+  item.appendChild(checkbox);
+  item.appendChild(label);
+  missionList.appendChild(item);
   });
 
   document.getElementById('secretMission').innerText = `🎯 Secret Mission: ${secretMission}`;
