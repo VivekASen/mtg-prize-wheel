@@ -101,7 +101,7 @@ window.startApp = async function () {
       allCheckboxes.forEach((cb, idx) => {
         if (cb.checked) updatedChecks.push(idx);
       });
-      await set(dbRefs.playerChecks.child(playerName), updatedChecks);
+      await set(child(dbRefs.playerChecks, playerName), updatedChecks);
 
       if (updatedChecks.length > 0) {
         document.getElementById('spinSection').classList.remove('hidden');
