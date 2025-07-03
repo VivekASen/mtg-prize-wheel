@@ -86,7 +86,7 @@ window.startApp = async function () {
   const missionList = document.getElementById('missionList');
   missionList.innerHTML = '';
 
-  const checksSnapshot = await get(dbRefs.playerChecks.child(playerName));
+  const checksSnapshot = await get(child(dbRefs.playerChecks, playerName));
   const savedChecks = checksSnapshot.exists() ? checksSnapshot.val() : [];
 
   regularMissions.forEach((mission, i) => {
