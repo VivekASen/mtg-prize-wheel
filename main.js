@@ -61,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function initCanvas() {
     canvas = document.getElementById('wheelCanvas');
     ctx = canvas.getContext('2d');
+    canvas.classList.remove('hidden');
   }
 
   window.startApp = function () {
@@ -181,7 +182,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function revealPrize() {
-    const index = Math.floor((prizes.length - (angle / (2 * Math.PI)) * prizes.length) % prizes.length);
+    const normalizedAngle = (2 * Math.PI - (angle % (2 * Math.PI))) % (2 * Math.PI);
+    const segmentAngle = (2 * Math.PI) / prizes.length;
+    const index = Math.floor(normalizedAngle / segmentAngle);
     const prize = prizes.splice(index, 1)[0];
     claimed.push({ name: playerName, prize });
     localStorage.setItem('prizes', JSON.stringify(prizes));
