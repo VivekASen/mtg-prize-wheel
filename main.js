@@ -9,6 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let claimed = JSON.parse(localStorage.getItem('claimed') || '[]');
   let playerName = '';
   let secretMission = '';
+  let canvas, ctx;
+
   const regularMissions = [
     "Command Performance – Cast your commander",
     "First Blood – Deal the first combat damage of the game",
@@ -56,8 +58,10 @@ document.addEventListener('DOMContentLoaded', () => {
   let spinning = false;
   let spinVelocity = 0;
 
-  const canvas = document.getElementById('wheelCanvas');
-  const ctx = canvas.getContext('2d');
+  function initCanvas() {
+    canvas = document.getElementById('wheelCanvas');
+    ctx = canvas.getContext('2d');
+  }
 
   window.startApp = function () {
     playerName = document.getElementById('playerName').value.trim();
@@ -71,7 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Assign unique secret mission
     const assignedMissions = JSON.parse(localStorage.getItem('assignedMissions') || '{}');
     if (!assignedMissions[playerName]) {
       const remaining = secretMissions.filter(m => !Object.values(assignedMissions).includes(m));
@@ -80,7 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     secretMission = assignedMissions[playerName];
 
-    // Render regular mission checklist
     const missionList = document.getElementById('missionList');
     missionList.innerHTML = '';
     const savedChecks = JSON.parse(localStorage.getItem(`checks_${playerName}`) || '[]');
@@ -95,8 +97,8 @@ document.addEventListener('DOMContentLoaded', () => {
           .filter(x => x !== null);
         localStorage.setItem(`checks_${playerName}`, JSON.stringify(updated));
 
-        // Allow spin on every mission checked
         document.getElementById('spinSection').classList.remove('hidden');
+        initCanvas();
         drawWheel();
       });
       const label = document.createElement('label');
@@ -120,6 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content: `✅ **${playerName}** completed their secret mission: "${secretMission}"` })
     });
+    initCanvas();
     drawWheel();
   }
 
@@ -173,6 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (spinning || prizes.length === 0) return;
     spinning = true;
     spinVelocity = 0.2 + Math.random() * 0.1;
+    initCanvas();
     animateWheel();
   }
 
@@ -200,6 +204,8 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('prizes', JSON.stringify(prizes));
     localStorage.setItem('claimed', JSON.stringify(claimed));
     renderPrizeTables();
+    initCanvas();
+    drawWheel();
   }
 
   window.resetPrizePool = function () {
