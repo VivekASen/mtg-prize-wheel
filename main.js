@@ -89,7 +89,7 @@ window.startApp = async function () {
   // Check if secret mission was completed
   const completedSnap = await get(dbRefs.secretMissionCompletions);
   const completedData = completedSnap.exists() ? completedSnap.val() : {};
-  secretCompleted = completedData[playerName] ? true : false;
+  secretCompleted = !!completedData[playerName];
   secretPrize = completedData[playerName]?.prize || null;
 
   // Mission list loading
@@ -97,7 +97,13 @@ window.startApp = async function () {
   missionList.innerHTML = '';
 
   const checksSnapshot = await get(dbRefs.playerChecks);
-  const savedChecks = checksSnapshot.exists() && checksSnapshot.val()[playerName] ? checksSnapshot.val()[playerName] : [];
+  let savedChecks = [];
+  if (checksSnapshot.exists()) {
+    const val = checksSnapshot.val();
+    if (val && val[playerName]) {
+      savedChecks = val[playerName];
+    }
+  }
 
   regularMissions.forEach((mission, i) => {
     const item = document.createElement('div');
