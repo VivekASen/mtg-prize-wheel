@@ -2,50 +2,48 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>MTG Prize Wheel</title>
-  <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Roboto&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel&family=Roboto&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>MTG Prize Wheel</h1>
 
-    <div id="nameEntry">
-      <input type="text" id="playerName" placeholder="Enter your name" />
-      <button onclick="startApp()">Start</button>
-    </div>
-
-    <div id="secretMission" class="hidden"></div>
-
-    <div id="missionTracker" class="hidden">
-      <h2>Regular Missions</h2>
-      <div id="missionList" class="scrollable-missions"></div>
-      <p>Mark your mission complete to unlock the prize wheel:</p>
-      <button id="secretCompleteBtn" onclick="completeMission()">✅ I completed my secret mission</button>
-    </div>
-
-    <div id="spinSection" class="hidden">
-      <!-- Ensure canvas is visible even if the wheel isn't spinning yet -->
-      <canvas id="wheelCanvas" width="400" height="400" style="visibility: visible;"></canvas>
-      <button onclick="spinWheel()">🎡 Spin</button>
-      <div id="prizeReveal"></div>
-      <canvas id="confettiCanvas" class="hidden"></canvas>
-    </div>
-
-    <button id="backToMissions" class="hidden">⬅️ Back to Missions</button>
-
-    <div id="adminPanel" class="hidden">
-      <h2>Admin Panel</h2>
-      <textarea id="prizeListInput" placeholder="Enter prizes, one per line"></textarea>
-      <button onclick="uploadPrizes()">Upload Prize List</button>
-      <button onclick="resetPrizePool()">Reset Prize Pool</button>
-      <div id="remainingPrizes"></div>
-      <div id="claimedPrizes"></div>
-    </div>
+  <div id="nameEntry" class="container">
+    <h1>🎉 MTG Birthday Prize Wheel 🎉</h1>
+    <input type="text" id="playerName" placeholder="Enter your name"/>
+    <button onclick="startApp()">Enter</button>
   </div>
 
+  <div id="adminPanel" class="container hidden">
+    <h2>Admin Panel</h2>
+    <textarea id="prizeListInput" rows="8" placeholder="Enter one prize per line"></textarea>
+    <br>
+    <button onclick="uploadPrizes()">Upload Prizes</button>
+    <button onclick="resetPrizePool()">Reset Prize Pool</button>
+    <div id="remainingPrizes"></div>
+    <div id="claimedPrizes"></div>
+  </div>
+
+  <div id="missionTracker" class="container hidden">
+    <h2>Your Missions</h2>
+    <p id="secretMission" class="hidden"></p>
+    <div id="missionList" class="scrollable-missions"></div>
+    <button id="secretCompleteBtn" onclick="completeMission()">I completed my secret mission!</button>
+  </div>
+
+  <div id="spinSection" class="container hidden">
+    <canvas id="wheelCanvas" width="300" height="300" class="hidden"></canvas>
+    <p id="prizeReveal"></p>
+    <button onclick="spinWheel()">Spin the Wheel!</button>
+    <br>
+    <button id="backToMissions" class="hidden">⬅️ Back to Missions</button>
+  </div>
+
+  <canvas id="confettiCanvas" class="hidden"></canvas>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script type="module" src="main.js"></script>
-  <script src="confetti.min.js"></script>
+
 </body>
 </html>
