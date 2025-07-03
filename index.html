@@ -26,7 +26,8 @@
     </div>
 
     <div id="spinSection" class="hidden">
-      <canvas id="wheelCanvas" width="400" height="400"></canvas>
+      <!-- Ensure canvas is visible even if the wheel isn't spinning yet -->
+      <canvas id="wheelCanvas" width="400" height="400" style="visibility: visible;"></canvas>
       <button onclick="spinWheel()">🎡 Spin</button>
       <div id="prizeReveal"></div>
       <canvas id="confettiCanvas" class="hidden"></canvas>
