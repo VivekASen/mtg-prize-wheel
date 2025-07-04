@@ -104,35 +104,66 @@ window.startApp = async function () {
   
   const checksSnapshot = await get(dbRefs.playerChecks);
   const savedChecks = checksSnapshot.exists() && checksSnapshot.val()[playerName] ? checksSnapshot.val()[playerName] : [];
-  
+
   regularMissions.forEach((mission, i) => {
     const tile = document.createElement('div');
     tile.className = 'mission-tile';
-    if (savedChecks.includes(i)) tile.classList.add('selected');
     tile.innerText = mission;
   
-    tile.addEventListener('click', async () => {
-      tile.classList.toggle('selected');
+    const alreadyChecked = savedChecks.includes(i);
   
-      const allTiles = document.querySelectorAll('.mission-tile');
-      const updatedChecks = [];
-      allTiles.forEach((t, idx) => {
-        if (t.classList.contains('selected')) updatedChecks.push(idx);
-      });
+    if (alreadyChecked) {
+      tile.classList.add('completed');
+      tile.innerHTML = `<s>${mission}</s><br/><small>✅ Prize already claimed</small>`;
+    } else {
+      tile.addEventListener('click', async () => {
+        // Immediately disable tile after clicking
+        tile.classList.add('completed');
+        tile.innerHTML = `<s>${mission}</s><br/><small>🎉 Prize incoming...</small>`;
+        tile.style.pointerEvents = 'none';
   
-      const allChecks = checksSnapshot.exists() ? checksSnapshot.val() : {};
-      allChecks[playerName] = updatedChecks;
-      await set(dbRefs.playerChecks, allChecks);
+        // Update Firebase
+        const allChecks = checksSnapshot.exists() ? checksSnapshot.val() : {};
+        const updated = [...(allChecks[playerName] || []), i];
+        allChecks[playerName] = updated;
+        await set(dbRefs.playerChecks, allChecks);
   
-      if (updatedChecks.length > 0 && !hasSpun && !secretCompleted) {
+        // Spin logic
+        const snapshot = await get(dbRefs.prizes);
+        if (!snapshot.exists()) return;
+        const prizes = snapshot.val();
+        const randomIndex = Math.floor(Math.random() * prizes.length);
+        const prize = prizes.splice(randomIndex, 1)[0];
+  
+        const claimedSnap = await get(dbRefs.claimed);
+        const claimed = claimedSnap.exists() ? claimedSnap.val() : [];
+        claimed.push({ name: playerName, prize });
+  
+        await set(dbRefs.prizes, prizes);
+        await set(dbRefs.claimed, claimed);
+  
+        // Update tile with actual prize
+        tile.innerHTML = `<s>${mission}</s><br/><small>🎁 You won: ${prize}</small>`;
+  
+        // Trigger wheel and confetti
         document.getElementById('spinSection').classList.remove('hidden');
         initCanvas();
         drawWheel();
-      }
-    });
+        document.getElementById('prizeReveal').innerText = `🎉 You won: ${prize}`;
+        document.getElementById('confettiCanvas').classList.remove('hidden');
+        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+  
+        fetch(spinWebhook, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: `🎡 **${playerName}** completed a mission: "${mission}" and won: **${prize}**` })
+        });
+      });
+    }
   
     missionList.appendChild(tile);
   });
+
 
 
   // UI updates
