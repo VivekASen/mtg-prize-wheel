@@ -138,27 +138,28 @@ window.startApp = async function () {
 function triggerTreasureChestAnimation(prize) {
   const modal = document.getElementById('giftModal');
   const prizeText = document.getElementById('giftPrizeText');
+  const lottieContainer = document.getElementById('lottie-container');
 
-  if (!modal || !prizeText) return;
-
-  modal.innerHTML = `
-    <div class="treasure-chest">
-      <div class="chest-lid"></div>
-      <div class="chest-base"></div>
-      <div class="prize-text" id="giftPrizeText">🎁 You won: ${prize}</div>
-    </div>
-  `;
+  if (!modal || !prizeText || !lottieContainer) return;
 
   modal.classList.remove('hidden');
+  prizeText.innerText = ''; // Clear text until animation is done
 
-  setTimeout(() => {
-    modal.classList.add('open');
-  }, 100);
+  const anim = lottie.loadAnimation({
+    container: lottieContainer,
+    renderer: 'svg',
+    loop: false,
+    autoplay: true,
+    path: 'Animation - 1751606551314.json', // Ensure this is in the same directory or update the path
+  });
 
-  setTimeout(() => {
-    modal.classList.remove('open');
-    setTimeout(() => modal.classList.add('hidden'), 800);
-  }, 4000);
+  anim.addEventListener('complete', () => {
+    prizeText.innerText = `🎁 You won: ${prize}`;
+    setTimeout(() => {
+      modal.classList.add('hidden');
+      lottieContainer.innerHTML = ''; // Clean up the animation
+    }, 3000);
+  });
 }
 
 window.completeMission = async function () {
