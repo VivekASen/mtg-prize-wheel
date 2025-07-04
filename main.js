@@ -1,29 +1,5 @@
+import { dbRefs, set, get, update } from './firebaseconfig.js';
 
-// Firebase Configuration and Initialization
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getDatabase,
-  ref,
-  set,
-  get,
-  update,
-  child
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCMSBZ3SjddXMatw4iwUr8T8aFMY-O-N_I",
-  authDomain: "mtg-prize-wheel.firebaseapp.com",
-  databaseURL: "https://mtg-prize-wheel-default-rtdb.firebaseio.com",
-  projectId: "mtg-prize-wheel",
-  storageBucket: "mtg-prize-wheel.firebasestorage.app",
-  messagingSenderId: "909073049822",
-  appId: "1:909073049822:web:386b014a0be75f972fba4f"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-// Missions
 const regularMissions = [
   "Command Performance – Cast your commander",
   "First Blood – Deal the first combat damage of the game",
@@ -52,85 +28,187 @@ const regularMissions = [
   "Meet My Gaze – Pass priority by saying nothing and staring intensely at someone"
 ];
 
-// Get user name from localStorage or prompt if not set
-let playerName = localStorage.getItem("playerName");
-if (!playerName) {
-  playerName = prompt("Enter your name:");
-  localStorage.setItem("playerName", playerName);
-}
+const secretMissions = [
+  "Secretly try to move your playmat away from everyone slowly till someone realizes...",
+  "Slowly add random tokens (not yours) to your battlefield...",
+  "Quote the flavor text of a card as if it were advice...",
+  "Make up a fake rule and get someone to believe it...",
+  "Physically inch your commander closer to another player...",
+  "Propose a table deal every turn, even absurd ones...",
+  "Use a weird object (sock, coin, etc.) as a proxy...",
+  "Commercial break - Interrupt the game with an excuse...",
+  "Try to steal drinks before getting caught...",
+  "Take stalker photos of Tony without getting caught...",
+  "The Clean up step - Tidy other people’s cards...",
+  "Sniff a playmat or deck and nod thoughtfully..."
+];
 
-// Initialize UI
-document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("welcomeName").textContent = playerName;
-  loadMissions();
-});
+let playerName = '';
+let secretMission = '';
+let secretCompleted = false;
+let secretPrize = null;
 
-function loadMissions() {
-  const container = document.getElementById("missionsContainer");
-  container.innerHTML = "";
-  regularMissions.forEach((mission, index) => {
-    const tile = document.createElement("div");
-    tile.className = "mission-tile";
+window.startApp = async function () {
+  playerName = document.getElementById('playerName').value.trim();
+  if (!playerName) return;
+
+  document.getElementById('nameEntry').classList.add('hidden');
+
+  if (playerName.toLowerCase() === 'admin') {
+    document.getElementById('adminPanel').classList.remove('hidden');
+    renderPrizeTables();
+    return;
+  }
+
+  const missionSnap = await get(dbRefs.assignedMissions);
+  const allAssigned = missionSnap.exists() ? missionSnap.val() : {};
+  if (!allAssigned[playerName]) {
+    const used = Object.values(allAssigned);
+    const available = secretMissions.filter(m => !used.includes(m));
+    const selected = available[Math.floor(Math.random() * available.length)] || "No mission left";
+    await update(dbRefs.assignedMissions, { [playerName]: selected });
+    secretMission = selected;
+  } else {
+    secretMission = allAssigned[playerName];
+  }
+
+  const secretSnap = await get(dbRefs.secretMissionCompletions);
+  const secretData = secretSnap.exists() ? secretSnap.val() : {};
+  secretCompleted = !!secretData[playerName];
+  secretPrize = secretData[playerName]?.prize || null;
+
+  document.getElementById('secretMission').classList.remove('hidden');
+  document.getElementById('secretMission').innerText = `🎯 Secret Mission: ${secretMission}`;
+
+  const checkSnap = await get(dbRefs.playerChecks);
+  const saved = checkSnap.exists() && checkSnap.val()[playerName] ? checkSnap.val()[playerName] : {};
+  const completedIndices = Object.keys(saved).map(Number);
+
+  const missionList = document.getElementById('missionList');
+  missionList.innerHTML = '';
+
+  regularMissions.forEach((mission, idx) => {
+    const tile = document.createElement('div');
+    tile.className = 'mission-tile';
     tile.textContent = mission;
-    tile.onclick = () => handleMissionClick(index, tile, mission);
-    container.appendChild(tile);
-  });
-}
 
-async function handleMissionClick(index, tile, missionText) {
-  const userRef = ref(db, `players/${playerName}/missions`);
-  const snapshot = await get(userRef);
-  const data = snapshot.exists() ? snapshot.val() : {};
+    if (completedIndices.includes(idx)) {
+      tile.classList.add('completed');
+      tile.textContent += ` – 🎁 ${saved[idx]}`;
+    }
 
-  if (data[index]) return;
+    tile.addEventListener('click', async () => {
+      if (tile.classList.contains('completed')) return;
 
-  // Mark as completed visually and in DB
-  tile.classList.add("completed");
-  tile.textContent = `${missionText} — Rewarding...`;
+      const prizeSnap = await get(dbRefs.prizes);
+      if (!prizeSnap.exists()) return;
 
-  const prize = await assignPrize(playerName);
+      const prizes = prizeSnap.val();
+      const prizeIndex = Math.floor(Math.random() * prizes.length);
+      const prize = prizes.splice(prizeIndex, 1)[0];
 
-  await update(ref(db, `players/${playerName}/missions`), {
-    [index]: { mission: missionText, prize: prize }
-  });
+      const claimedSnap = await get(dbRefs.claimed);
+      const claimed = claimedSnap.exists() ? claimedSnap.val() : [];
+      claimed.push({ name: playerName, prize });
 
-  showGiftBoxPrize(prize);
-  tile.textContent = `${missionText} — 🎁 ${prize}`;
-}
+      saved[idx] = prize;
+      await update(dbRefs.playerChecks, { [playerName]: saved });
+      await set(dbRefs.prizes, prizes);
+      await set(dbRefs.claimed, claimed);
 
-async function assignPrize(playerName) {
-  const prizesRef = ref(db, "prizes");
-  const snapshot = await get(prizesRef);
-  const prizePool = snapshot.exists() ? snapshot.val() : [];
+      tile.classList.add('completed');
+      tile.textContent += ` – 🎁 ${prize}`;
+      triggerTreasureChestAnimation(prize);
+    });
 
-  const availablePrizes = Object.keys(prizePool).filter(
-    (k) => prizePool[k].claimedBy === undefined
-  );
-
-  if (availablePrizes.length === 0) return "No prizes left";
-
-  const randomKey = availablePrizes[Math.floor(Math.random() * availablePrizes.length)];
-  const prize = prizePool[randomKey].name;
-
-  await update(ref(db, `prizes/${randomKey}`), {
-    claimedBy: playerName,
-    claimedAt: new Date().toISOString()
+    missionList.appendChild(tile);
   });
 
-  return prize;
-}
+  document.getElementById('missionTracker').classList.remove('hidden');
 
-function showGiftBoxPrize(prize) {
-  const modal = document.getElementById("giftModal");
-  modal.classList.add("open");
+  if (secretCompleted) {
+    const btn = document.getElementById('secretCompleteBtn');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = `✅ Secret Mission Done! Prize: ${secretPrize}`;
+    }
+  }
+};
 
-  const lid = document.querySelector(".chest-lid");
-  const text = document.querySelector(".prize-text");
+function triggerTreasureChestAnimation(prize) {
+  const modal = document.getElementById('giftModal');
+  const prizeText = document.getElementById('giftPrizeText');
 
-  lid.style.animation = "lidFlipOpen 1.5s ease-out forwards";
-  text.textContent = `You won: ${prize}`;
+  if (!modal || !prizeText) return;
+
+  modal.innerHTML = `
+    <div class="treasure-chest">
+      <div class="chest-lid"></div>
+      <div class="chest-base"></div>
+      <div class="prize-text" id="giftPrizeText">🎁 You won: ${prize}</div>
+    </div>
+  `;
+
+  modal.classList.remove('hidden');
 
   setTimeout(() => {
-    modal.classList.remove("open");
+    modal.classList.add('open');
+  }, 100);
+
+  setTimeout(() => {
+    modal.classList.remove('open');
+    setTimeout(() => modal.classList.add('hidden'), 800);
   }, 4000);
+}
+
+window.completeMission = async function () {
+  if (secretCompleted) return;
+
+  const prizeSnap = await get(dbRefs.prizes);
+  if (!prizeSnap.exists()) return;
+
+  const prizes = prizeSnap.val();
+  const prizeIndex = Math.floor(Math.random() * prizes.length);
+  const prize = prizes.splice(prizeIndex, 1)[0];
+
+  const claimedSnap = await get(dbRefs.claimed);
+  const claimed = claimedSnap.exists() ? claimedSnap.val() : [];
+  claimed.push({ name: playerName, prize });
+
+  await set(dbRefs.prizes, prizes);
+  await set(dbRefs.claimed, claimed);
+  await update(dbRefs.secretMissionCompletions, { [playerName]: { prize } });
+
+  const btn = document.getElementById('secretCompleteBtn');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = `✅ Secret Mission Done! Prize: ${prize}`;
+  }
+
+  triggerTreasureChestAnimation(prize);
+};
+
+window.uploadPrizes = async function () {
+  const raw = document.getElementById('prizeListInput').value;
+  const newPrizes = raw.split('\n').map(x => x.trim()).filter(Boolean);
+  await set(dbRefs.prizes, newPrizes);
+  await set(dbRefs.claimed, []);
+  renderPrizeTables();
+};
+
+window.resetPrizePool = async function () {
+  await set(dbRefs.prizes, []);
+  await set(dbRefs.claimed, []);
+  document.getElementById('prizeListInput').value = '';
+  renderPrizeTables();
+};
+
+async function renderPrizeTables() {
+  const prizesSnap = await get(dbRefs.prizes);
+  const claimedSnap = await get(dbRefs.claimed);
+  const prizes = prizesSnap.exists() ? prizesSnap.val() : [];
+  const claimed = claimedSnap.exists() ? claimedSnap.val() : [];
+
+  document.getElementById('remainingPrizes').innerHTML = `<h3>Remaining Prizes (${prizes.length})</h3><ul>${prizes.map(p => `<li>${p}</li>`).join('')}</ul>`;
+  document.getElementById('claimedPrizes').innerHTML = `<h3>Claimed Prizes (${claimed.length})</h3><ul>${claimed.map(c => `<li>${c.name} won ${c.prize}</li>`).join('')}</ul>`;
 }
