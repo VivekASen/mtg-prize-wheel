@@ -1,4 +1,4 @@
-import { dbRefs, set, get, update } from './firebaseconfig.js';
+import { dbRefs, set, get, update, onValue } from './firebaseconfig.js';
 
 const regularMissions = [
   "Command Performance – Cast your commander",
@@ -48,6 +48,17 @@ let secretMission = '';
 let secretCompleted = false;
 let secretPrize = null;
 
+function showGiftBoxPrize(prizeText) {
+  const modal = document.getElementById('giftBoxModal');
+  const text = document.getElementById('giftPrizeText');
+  text.innerText = `🎁 You won: ${prizeText}`;
+  modal.classList.remove('hidden');
+
+  setTimeout(() => {
+    modal.classList.add('hidden');
+  }, 5000);
+}
+
 window.startApp = async function () {
   playerName = document.getElementById('playerName').value.trim();
   if (!playerName) return;
@@ -60,6 +71,7 @@ window.startApp = async function () {
     return;
   }
 
+  // Get secret mission
   const missionSnap = await get(dbRefs.assignedMissions);
   const allAssigned = missionSnap.exists() ? missionSnap.val() : {};
   if (!allAssigned[playerName]) {
@@ -72,6 +84,7 @@ window.startApp = async function () {
     secretMission = allAssigned[playerName];
   }
 
+  // Check if secret complete
   const secretSnap = await get(dbRefs.secretMissionCompletions);
   const secretData = secretSnap.exists() ? secretSnap.val() : {};
   secretCompleted = !!secretData[playerName];
@@ -80,6 +93,7 @@ window.startApp = async function () {
   document.getElementById('secretMission').classList.remove('hidden');
   document.getElementById('secretMission').innerText = `🎯 Secret Mission: ${secretMission}`;
 
+  // Load user completed missions
   const checkSnap = await get(dbRefs.playerChecks);
   const saved = checkSnap.exists() && checkSnap.val()[playerName] ? checkSnap.val()[playerName] : {};
   const completedIndices = Object.keys(saved).map(Number);
@@ -118,7 +132,7 @@ window.startApp = async function () {
 
       tile.classList.add('completed');
       tile.textContent += ` – 🎁 ${prize}`;
-      triggerGiftBoxAnimation(prize);
+      showGiftBoxPrize(prize);
     });
 
     missionList.appendChild(tile);
@@ -136,22 +150,6 @@ window.startApp = async function () {
     document.getElementById('missionTracker').classList.remove('hidden');
   };
 };
-
-function triggerGiftBoxAnimation(prize) {
-  const modal = document.getElementById('giftModal');
-  const prizeText = document.getElementById('giftPrizeText');
-  modal.classList.remove('hidden');
-
-  setTimeout(() => {
-    modal.classList.add('open');
-    prizeText.innerText = `🎁 You won: ${prize}`;
-  }, 300);
-
-  setTimeout(() => {
-    modal.classList.remove('open');
-    setTimeout(() => modal.classList.add('hidden'), 800);
-  }, 4000);
-}
 
 window.completeMission = async function () {
   if (secretCompleted) return;
@@ -173,7 +171,7 @@ window.completeMission = async function () {
 
   document.getElementById('secretCompleteBtn').disabled = true;
   document.getElementById('secretCompleteBtn').textContent = `✅ Secret Mission Done! Prize: ${prize}`;
-  triggerGiftBoxAnimation(prize);
+  showGiftBoxPrize(prize);
 };
 
 window.uploadPrizes = async function () {
