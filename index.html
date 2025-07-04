@@ -32,6 +32,8 @@
     <button id="secretCompleteBtn" onclick="completeMission()">I completed my secret mission!</button>
   </div>
 
+  
+<canvas id="confettiCanvas" class="hidden"></canvas>
   <div id="spinSection" class="container hidden">
     <canvas id="wheelCanvas" width="300" height="300" class="hidden"></canvas>
     <p id="prizeReveal"></p>
@@ -39,7 +41,13 @@
     <br>
     <button id="backToMissions" class="hidden">⬅️ Back to Missions</button>
   </div>
-
+  
+  <div id="wheelModal" class="modal hidden">
+    <div class="modal-content">
+      <canvas id="wheelCanvas" width="300" height="300"></canvas>
+    </div>
+  </div>
+  
   <canvas id="confettiCanvas" class="hidden"></canvas>
 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
