@@ -138,28 +138,26 @@ window.startApp = async function () {
 function triggerTreasureChestAnimation(prize) {
   const modal = document.getElementById('giftModal');
   const prizeText = document.getElementById('giftPrizeText');
-  const lottieContainer = document.getElementById('lottieContainer');
+  const chest = document.getElementById('chestAnimation');
 
-  if (!modal || !prizeText || !lottieContainer) return;
+  // Reset animation
+  chest.seek(0);
+  chest.play();
 
+  // Show modal
   modal.classList.remove('hidden');
-  prizeText.innerText = ''; // Clear text until animation is done
+  modal.classList.add('open');
 
-  const anim = lottie.loadAnimation({
-    container: lottieContainer,
-    renderer: 'svg',
-    loop: false,
-    autoplay: true,
-    path: 'treasure-chest.json', // Ensure this is in the same directory or update the path
-  });
-
-  anim.addEventListener('complete', () => {
+  // Show prize after short delay
+  setTimeout(() => {
     prizeText.innerText = `🎁 You won: ${prize}`;
-    setTimeout(() => {
-      modal.classList.add('hidden');
-      lottieContainer.innerHTML = ''; // Clean up the animation
-    }, 3000);
-  });
+  }, 2000);
+
+  // Hide after a bit
+  setTimeout(() => {
+    modal.classList.remove('open');
+    setTimeout(() => modal.classList.add('hidden'), 800);
+  }, 5000);
 }
 
 window.completeMission = async function () {
