@@ -1,18 +1,12 @@
-import { dbRefs, set, get, update, onValue } from './firebaseconfig.js';
+import { dbRefs, set, get, update } from './firebaseconfig.js';
 
 const spinWebhook = 'YOUR_DISCORD_WEBHOOK_URL_FOR_SPINS';
-const missionWebhook = 'YOUR_DISCORD_WEBHOOK_URL_FOR_MISSIONS';
 
 let playerName = '';
-let secretMission = '';
 let canvas, ctx;
 let angle = 0;
 let spinning = false;
 let spinVelocity = 0;
-let secretCompleted = false;
-let secretPrize = null;
-let eligibleForSecretSpin = false;
-let hasSpun = false; 
 
 const regularMissions = [
   "Command Performance – Cast your commander",
@@ -42,259 +36,13 @@ const regularMissions = [
   "Meet My Gaze – Pass priority by saying nothing and staring intensely at someone"
 ];
 
-const secretMissions = [
-  "Secretly try to move your playmat away from everyone slowly till someone realizes...",
-  "Slowly add random tokens (not yours) to your battlefield...",
-  "Quote the flavor text of a card as if it were advice...",
-  "Make up a fake rule and get someone to believe it...",
-  "Physically inch your commander closer to another player...",
-  "Propose a table deal every turn, even absurd ones...",
-  "Use a weird object (sock, coin, etc.) as a proxy...",
-  "Commercial break - Interrupt the game with an excuse...",
-  "Try to steal drinks before getting caught...",
-  "Take stalker photos of Tony without getting caught...",
-  "The Clean up step - Tidy other people’s cards...",
-  "Sniff a playmat or deck and nod thoughtfully..."
-];
-
 function initCanvas() {
   canvas = document.getElementById('wheelCanvas');
   ctx = canvas.getContext('2d');
   canvas.classList.remove('hidden');
 }
 
-window.startApp = async function () {
-  playerName = document.getElementById('playerName').value.trim();
-  if (!playerName) return;
-  // Check if user has already spun the wheel
-  const claimedSnapshot = await get(dbRefs.claimed);
-  const claimedData = claimedSnapshot.exists() ? claimedSnapshot.val() : [];
-  hasSpun = claimedData.some(entry => entry.name === playerName);
-
-  document.getElementById('nameEntry').classList.add('hidden');
-
-  if (playerName.toLowerCase() === 'admin') {
-    document.getElementById('adminPanel').classList.remove('hidden');
-    renderPrizeTables();
-    return;
-  }
-
-  // Assign secret mission if not already assigned
-  const snapshot = await get(dbRefs.assignedMissions);
-  const allAssignments = snapshot.exists() ? snapshot.val() : {};
-  if (!allAssignments[playerName]) {
-    const usedMissions = Object.values(allAssignments);
-    const available = secretMissions.filter(m => !usedMissions.includes(m));
-    const assigned = available[Math.floor(Math.random() * available.length)] || "(No missions left)";
-    await update(dbRefs.assignedMissions, { [playerName]: assigned });
-    secretMission = assigned;
-  } else {
-    secretMission = allAssignments[playerName];
-  }
-
-  // Check if secret mission was completed
-  const completedSnap = await get(dbRefs.secretMissionCompletions);
-  const completedData = completedSnap.exists() ? completedSnap.val() : {};
-  secretCompleted = completedData[playerName] ? true : false;
-  secretPrize = completedData[playerName]?.prize || null;
-
-  // Load regular mission progress
-  const missionList = document.getElementById('missionList');
-  missionList.innerHTML = '';
-  
-  const checksSnapshot = await get(dbRefs.playerChecks);
-  const savedChecks = checksSnapshot.exists() && checksSnapshot.val()[playerName] ? checksSnapshot.val()[playerName] : [];
-
-  regularMissions.forEach((mission, i) => {
-    const tile = document.createElement('div');
-    tile.className = 'mission-tile';
-    tile.innerText = mission;
-  
-    const alreadyChecked = savedChecks.includes(i);
-  
-    if (alreadyChecked) {
-      tile.classList.add('completed');
-      tile.innerHTML = `<s>${mission}</s><br/><small>✅ Prize already claimed</small>`;
-    } else {
-      tile.addEventListener('click', async () => {
-        // Immediately disable tile after clicking
-        tile.classList.add('completed');
-        tile.innerHTML = `<s>${mission}</s><br/><small>🎉 Prize incoming...</small>`;
-        tile.style.pointerEvents = 'none';
-  
-        // Update Firebase
-        const allChecks = checksSnapshot.exists() ? checksSnapshot.val() : {};
-        const updated = [...(allChecks[playerName] || []), i];
-        allChecks[playerName] = updated;
-        await set(dbRefs.playerChecks, allChecks);
-  
-        // Spin logic
-        const snapshot = await get(dbRefs.prizes);
-        if (!snapshot.exists()) return;
-        const prizes = snapshot.val();
-        const randomIndex = Math.floor(Math.random() * prizes.length);
-        const prize = prizes.splice(randomIndex, 1)[0];
-  
-        const claimedSnap = await get(dbRefs.claimed);
-        const claimed = claimedSnap.exists() ? claimedSnap.val() : [];
-        claimed.push({ name: playerName, prize });
-  
-        await set(dbRefs.prizes, prizes);
-        await set(dbRefs.claimed, claimed);
-  
-        // Update tile with actual prize
-        tile.innerHTML = `<s>${mission}</s><br/><small>🎁 You won: ${prize}</small>`;
-  
-        // Trigger wheel and confetti
-        document.getElementById('spinSection').classList.remove('hidden');
-        initCanvas();
-        drawWheel();
-        document.getElementById('prizeReveal').innerText = `🎉 You won: ${prize}`;
-        document.getElementById('confettiCanvas').classList.remove('hidden');
-        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-  
-        fetch(spinWebhook, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: `🎡 **${playerName}** completed a mission: "${mission}" and won: **${prize}**` })
-        });
-      });
-    }
-  
-    missionList.appendChild(tile);
-  });
-
-
-
-  // UI updates
-  document.getElementById('secretMission').innerText = `🎯 Secret Mission: ${secretMission}`;
-  document.getElementById('secretMission').classList.remove('hidden');
-  document.getElementById('missionTracker').classList.remove('hidden');
-
-  const secretBtn = document.getElementById('secretCompleteBtn');
-  const backBtn = document.getElementById('backToMissions');
-
-  if (secretCompleted) {
-    secretBtn.disabled = true;
-    secretBtn.textContent = `✅ Secret Mission Complete`;
-    document.getElementById('spinSection').classList.remove('hidden');
-    initCanvas();
-    drawWheel();
-    document.getElementById('prizeReveal').innerText = `🎉 You won: ${secretPrize}`;
-  }
-
-  if (savedChecks.length > 0) {
-    eligibleForSecretSpin = true;
-    document.getElementById('spinSection').classList.remove('hidden');
-    initCanvas();
-    drawWheel();
-  }
-
-  backBtn.classList.add('hidden');
-  backBtn.onclick = () => {
-    document.getElementById('missionTracker').classList.remove('hidden');
-    document.getElementById('spinSection').classList.add('hidden');
-    backBtn.classList.add('hidden');
-  };
-};
-
-window.completeMission = async function () {
-  if (secretCompleted) return;
-
-  const snapshot = await get(dbRefs.prizes);
-  if (!snapshot.exists()) return;
-
-  const prizes = snapshot.val();
-  const randomIndex = Math.floor(Math.random() * prizes.length);
-  const prize = prizes.splice(randomIndex, 1)[0];
-
-  const claimedSnapshot = await get(dbRefs.claimed);
-  const claimed = claimedSnapshot.exists() ? claimedSnapshot.val() : [];
-  claimed.push({ name: playerName, prize });
-
-  await set(dbRefs.prizes, prizes);
-  await set(dbRefs.claimed, claimed);
-  await update(dbRefs.secretMissionCompletions, { [playerName]: { prize } });
-
-  secretCompleted = true;
-  secretPrize = prize;
-
-  document.getElementById('missionTracker').classList.add('hidden');
-  document.getElementById('spinSection').classList.remove('hidden');
-  document.getElementById('backToMissions').classList.remove('hidden');
-  document.getElementById('secretCompleteBtn').disabled = true;
-  document.getElementById('secretCompleteBtn').textContent = `✅ Secret Mission Complete`;
-  document.getElementById('prizeReveal').innerText = `🎉 You won: ${prize}`;
-  initCanvas();
-  drawWheel();
-
-  await fetch(missionWebhook, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ content: `✅ **${playerName}** completed their secret mission: "${secretMission}" and won: **${prize}**` })
-  });
-};
-
-window.spinWheel = async function () {
-  if (spinning || hasSpun || secretCompleted) return;
-
-  const snapshot = await get(dbRefs.prizes);
-  if (!snapshot.exists()) return;
-
-  spinning = true;
-  spinVelocity = 0.2 + Math.random() * 0.1;
-  initCanvas();
-  animateWheel();
-};
-
-function animateWheel() {
-  if (!spinning) return;
-  angle += spinVelocity;
-  spinVelocity *= 0.98;
-  if (spinVelocity < 0.002) {
-    spinning = false;
-    revealPrize();
-    return;
-  }
-  drawWheel();
-  requestAnimationFrame(animateWheel);
-}
-
-async function revealPrize() {
-  hasSpun = true; // Prevent future spins
-
-  const prizesSnapshot = await get(dbRefs.prizes);
-  const claimedSnapshot = await get(dbRefs.claimed);
-
-  let prizes = prizesSnapshot.exists() ? prizesSnapshot.val() : [];
-  let claimed = claimedSnapshot.exists() ? claimedSnapshot.val() : [];
-
-  const normalizedAngle = (2 * Math.PI - (angle % (2 * Math.PI))) % (2 * Math.PI);
-  const segmentAngle = (2 * Math.PI) / prizes.length;
-  const index = Math.floor(normalizedAngle / segmentAngle);
-  const prize = prizes.splice(index, 1)[0];
-
-  claimed.push({ name: playerName, prize });
-
-  await set(dbRefs.prizes, prizes);
-  await set(dbRefs.claimed, claimed);
-
-  document.getElementById('prizeReveal').innerText = `🎉 You won: ${prize}`;
-  document.getElementById('confettiCanvas').classList.remove('hidden');
-  confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-
-  fetch(spinWebhook, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ content: `🎡 **${playerName}** spun the wheel and won: **${prize}**` })
-  });
-}
-
-async function drawWheel() {
-  const snapshot = await get(dbRefs.prizes);
-  if (!snapshot.exists()) return;
-  const prizes = snapshot.val();
-
+async function drawWheel(prizes) {
   if (!canvas || !ctx || prizes.length === 0) return;
   const radius = canvas.width / 2;
   const segmentAngle = (2 * Math.PI) / prizes.length;
@@ -326,33 +74,102 @@ async function drawWheel() {
   ctx.restore();
 }
 
-window.uploadPrizes = async function () {
-  const raw = document.getElementById('prizeListInput').value;
-  const newPrizes = raw.split('\n').map(x => x.trim()).filter(Boolean);
-  await set(dbRefs.prizes, newPrizes);
-  await set(dbRefs.claimed, []);
-  renderPrizeTables();
-  drawWheel();
-};
+function animateWheel(prizes, onFinish) {
+  angle += spinVelocity;
+  spinVelocity *= 0.98;
+  drawWheel(prizes);
 
-window.resetPrizePool = async function () {
-  await set(dbRefs.prizes, []);
-  await set(dbRefs.claimed, []);
-  document.getElementById('prizeListInput').value = '';
-  renderPrizeTables();
-  drawWheel();
-};
+  if (spinVelocity < 0.002) {
+    spinning = false;
+    onFinish();
+    return;
+  }
 
-async function renderPrizeTables() {
-  const prizesSnapshot = await get(dbRefs.prizes);
-  const claimedSnapshot = await get(dbRefs.claimed);
-
-  const prizes = prizesSnapshot.exists() ? prizesSnapshot.val() : [];
-  const claimed = claimedSnapshot.exists() ? claimedSnapshot.val() : [];
-
-  const remainingDiv = document.getElementById('remainingPrizes');
-  const claimedDiv = document.getElementById('claimedPrizes');
-
-  remainingDiv.innerHTML = `<h3>Remaining Prizes (${prizes.length})</h3><ul>${prizes.map(p => `<li>${p}</li>`).join('')}</ul>`;
-  claimedDiv.innerHTML = `<h3>Claimed Prizes (${claimed.length})</h3><ul>${claimed.map(c => `<li>${c.name} won ${c.prize}</li>`).join('')}</ul>`;
+  requestAnimationFrame(() => animateWheel(prizes, onFinish));
 }
+
+async function spinAndRevealPrize(missionDiv) {
+  const prizeSnap = await get(dbRefs.prizes);
+  const claimSnap = await get(dbRefs.claimed);
+  let prizes = prizeSnap.exists() ? prizeSnap.val() : [];
+  let claimed = claimSnap.exists() ? claimSnap.val() : [];
+
+  if (prizes.length === 0) {
+    alert("No prizes available.");
+    return;
+  }
+
+  const normalizedAngle = (2 * Math.PI - (angle % (2 * Math.PI))) % (2 * Math.PI);
+  const segmentAngle = (2 * Math.PI) / prizes.length;
+  const index = Math.floor(normalizedAngle / segmentAngle);
+  const prize = prizes.splice(index, 1)[0];
+
+  claimed.push({ name: playerName, prize });
+  await set(dbRefs.prizes, prizes);
+  await set(dbRefs.claimed, claimed);
+
+  missionDiv.classList.add('completed');
+  missionDiv.innerHTML += `<div class="prize-label">🎁 You won: ${prize}</div>`;
+
+  fetch(spinWebhook, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      content: `🎯 **${playerName}** completed a mission and won: **${prize}**`
+    })
+  });
+
+  document.getElementById('confettiCanvas').classList.remove('hidden');
+  confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+
+  setTimeout(() => {
+    document.getElementById('wheelModal').classList.add('hidden');
+    document.getElementById('confettiCanvas').classList.add('hidden');
+  }, 4000);
+}
+
+window.startApp = async function () {
+  playerName = document.getElementById('playerName').value.trim();
+  if (!playerName) return;
+
+  document.getElementById('nameEntry').classList.add('hidden');
+  document.getElementById('missionTracker').classList.remove('hidden');
+
+  const checkSnap = await get(dbRefs.playerChecks);
+  const savedChecks = checkSnap.exists() && checkSnap.val()[playerName] ? checkSnap.val()[playerName] : [];
+
+  const prizeSnap = await get(dbRefs.prizes);
+  const prizes = prizeSnap.exists() ? prizeSnap.val() : [];
+
+  const missionGrid = document.getElementById('missionGrid');
+  missionGrid.innerHTML = '';
+
+  regularMissions.forEach((mission, i) => {
+    const tile = document.createElement('div');
+    tile.classList.add('mission-tile');
+    tile.textContent = mission;
+
+    if (savedChecks.includes(i)) {
+      tile.classList.add('completed');
+    } else {
+      tile.addEventListener('click', async () => {
+        const updated = savedChecks.concat(i);
+        const allChecks = checkSnap.exists() ? checkSnap.val() : {};
+        allChecks[playerName] = updated;
+        await set(dbRefs.playerChecks, allChecks);
+
+        tile.removeEventListener('click', this);
+        tile.classList.add('completed');
+
+        // Show the modal and start the animation
+        document.getElementById('wheelModal').classList.remove('hidden');
+        initCanvas();
+        angle = 0;
+        spinVelocity = 0.25 + Math.random() * 0.1;
+        animateWheel(prizes, () => spinAndRevealPrize(tile));
+      });
+    }
+
+    missionGrid.appendChild(tile);
+  });
+};
