@@ -105,3 +105,19 @@ label {
     height: auto;
   }
 }
+
+.mission-tile {
+  padding: 12px;
+  margin: 8px;
+  border-radius: 10px;
+  background-color: #f0f0f0;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s;
+  user-select: none;
+}
+
+.mission-tile.selected {
+  background-color: #a3d977;
+}
+
