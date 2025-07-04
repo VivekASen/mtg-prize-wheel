@@ -109,7 +109,7 @@ label {
   background-color: #a3d977;
 }
 
-/* Treasure Chest Modal Overlay */
+/* 🔥 Lottie Treasure Chest Modal */
 #giftModal {
   position: fixed;
   top: 0;
@@ -131,88 +131,46 @@ label {
   opacity: 1;
 }
 
-/* Treasure Chest Container */
-.treasure-chest {
-  width: 220px;
-  height: 140px;
-  position: relative;
-  animation: chestShake 1.2s ease-in-out;
+#lottieContainer {
+  width: 300px;
+  height: 300px;
+  margin-bottom: 1rem;
 }
 
-/* Chest Base */
-.chest-base {
-  width: 100%;
-  height: 100px;
-  background: linear-gradient(to bottom, #8b4513, #5c3317);
-  border: 4px solid #3e220e;
-  border-radius: 0 0 10px 10px;
-  box-shadow: 0 0 15px #ffd700aa;
-  position: absolute;
-  bottom: 0;
-}
-
-/* Chest Lid */
-.chest-lid {
-  width: 100%;
-  height: 60px;
-  background: linear-gradient(to bottom, #d2691e, #a0522d);
-  border: 4px solid #3e220e;
-  border-bottom: none;
-  border-radius: 10px 10px 0 0;
-  position: absolute;
-  top: 0;
-  animation: lidFlipOpen 1.2s ease-out forwards;
-  transform-origin: bottom center;
-  z-index: 1;
-}
-
-/* Glowing Prize Text */
 .prize-text {
   color: #fff;
   font-size: 1.3rem;
   font-weight: bold;
   text-align: center;
-  margin-top: 180px;
-  animation: glowText 1.4s ease-in-out;
-  text-shadow: 0 0 8px #ffd700, 0 0 14px #ffa500;
-  z-index: 3;
+  animation: fadeInText 1s ease-in-out;
 }
 
-/* Keyframes */
-@keyframes lidFlipOpen {
-  0%   { transform: rotateX(0); }
-  50%  { transform: rotateX(-40deg); }
-  100% { transform: rotateX(-70deg); }
+/* Fade-in animation for prize */
+@keyframes fadeInText {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-@keyframes chestShake {
-  0%, 100% { transform: rotate(0deg); }
-  20% { transform: rotate(2deg); }
-  40% { transform: rotate(-2deg); }
-  60% { transform: rotate(1.5deg); }
-  80% { transform: rotate(-1.5deg); }
-}
-
-@keyframes glowText {
-  0%   { opacity: 0; transform: translateY(10px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
-/* Utility */
+/* Utility class */
 .hidden {
   display: none !important;
 }
 
 /* Responsive design */
 @media (max-width: 600px) {
-  .treasure-chest {
-    width: 160px;
-    height: 100px;
+  #lottieContainer {
+    width: 200px;
+    height: 200px;
   }
 
   .prize-text {
     font-size: 1rem;
-    margin-top: 130px;
   }
 
   button {
