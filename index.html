@@ -3,53 +3,61 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Vivek's MTG Prize Wheel</title>
-  <link rel="stylesheet" href="style.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Roboto&display=swap" rel="stylesheet">
+  <title>Vivek's Birthday</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel&family=Roboto&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="container">
-    <h1>Vivek's Birthday Bash</h1>
+    <h1>🎉 Vivek's Birthday Prize Wheel 🎉</h1>
 
     <div id="nameEntry">
-      <input type="text" id="playerName" placeholder="Enter your name" />
-      <button onclick="startApp()">Start</button>
-    </div>
-
-    <div id="secretMission" class="hidden"></div>
-
-    <div id="missionTracker" class="hidden">
-      <h2>Regular Missions</h2>
-      <div id="missionList" class="scrollable-missions"></div>
-    </div>
-
-    <div id="spinSection" class="hidden">
-      <canvas id="wheelCanvas" width="400" height="400"></canvas>
-      <button onclick="spinWheel()">🎡 Spin</button>
-      <div id="prizeReveal"></div>
-      <canvas id="confettiCanvas" class="hidden"></canvas>
+      <p>Enter your name to begin:</p>
+      <input type="text" id="playerName" placeholder="Your name" />
+      <br />
+      <button onclick="startApp()">Enter</button>
     </div>
 
     <div id="adminPanel" class="hidden">
       <h2>Admin Panel</h2>
-      <textarea id="prizeListInput" placeholder="Enter prizes, one per line"></textarea>
-      <button onclick="uploadPrizes()">Upload Prize List</button>
+      <textarea id="prizeListInput" rows="10" placeholder="Enter prizes, one per line"></textarea><br />
+      <button onclick="uploadPrizes()">Upload Prizes</button>
       <button onclick="resetPrizePool()">Reset Prize Pool</button>
       <div id="remainingPrizes"></div>
       <div id="claimedPrizes"></div>
     </div>
+
+    <div id="missionTracker" class="hidden">
+      <h2>Regular Missions</h2>
+      <div id="missionList" class="scrollable-missions"></div>
+
+      <h2>Secret Mission</h2>
+      <div id="secretMission" class="hidden"></div>
+      <button id="secretCompleteBtn" onclick="completeMission()">I completed the secret mission!</button>
+    </div>
+
+    <div id="spinSection" class="hidden">
+      <canvas id="wheelCanvas" width="300" height="300"></canvas>
+    </div>
+
+    <button id="backToMissions" class="hidden">⬅️ Back to Missions</button>
   </div>
 
-  <!-- Gift Box Modal -->
-  <div id="giftModal" class="gift-modal hidden">
+  <!-- Confetti canvas -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- Gift Box Modal Animation -->
+  <div id="giftBoxModal" class="gift-modal hidden">
     <div class="gift-box">
       <div class="box-lid"></div>
       <div class="box-body"></div>
-      <div class="prize-text" id="giftPrizeText"></div>
+      <div id="giftPrizeText" class="prize-text"></div>
     </div>
   </div>
 
+  <!-- Firebase + main logic -->
+  <script type="module" src="firebaseconfig.js"></script>
   <script type="module" src="main.js"></script>
-  <script src="confetti.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </body>
 </html>
