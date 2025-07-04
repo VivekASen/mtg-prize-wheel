@@ -151,31 +151,31 @@ canvas#confettiCanvas {
 }
 
 #logoutBtn:hover {
-  background-color: #bb3737;
+background-color: #bb3737;
 }
 
 /* Responsive Tweaks */
 @media (max-width: 600px) {
-  button {
-    padding: 1rem 1.5rem;
-    font-size: 1.2rem;
-  }
-
-  input[type="text"] {
-    font-size: 1.2rem;
-    padding: 0.8rem;
-  }
-
-  canvas#wheelCanvas {
-    max-width: 100%;
-    height: auto;
-  }
-
-  .scrollable-missions {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  }
-
-  .popup-content {
-    padding: 1.5rem;
-  }
+button {
+  padding: 1rem 1.5rem;
+  font-size: 1.2rem;
 }
+
+input[type="text"] {
+  font-size: 1.2rem;
+  padding: 0.8rem;
+}
+
+canvas#wheelCanvas {
+  max-width: 100%;
+  height: auto;
+}
+
+.scrollable-missions {
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+}
+
+.popup-content {
+  padding: 1.5rem;
+}
+
