@@ -3,55 +3,69 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MTG Prize Wheel</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel&family=Roboto&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <title>Vivek's Birthday Prize Wheel</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-  <div id="nameEntry" class="container">
-    <h1>🎉 MTG Birthday Prize Wheel 🎉</h1>
-    <input type="text" id="playerName" placeholder="Enter your name"/>
-    <button onclick="startApp()">Enter</button>
+  <!-- Login Page -->
+  <div id="nameEntry">
+    <h1>🎉 Welcome to Vivek's Birthday Bash 🎉</h1>
+    <p>Complete fun MTG missions, spin the prize wheel, and win cool rewards!</p>
+    <img src="party.png" alt="Party" style="max-width: 150px;" />
+    <input id="playerName" placeholder="Enter your name" />
+    <button onclick="startApp()">Start</button>
   </div>
 
-  <div id="adminPanel" class="container hidden">
+  <!-- Logout -->
+  <button id="logoutBtn" onclick="location.reload()" class="hidden">🔙 Logout</button>
+
+  <!-- Secret Mission Display -->
+  <div id="secretMission" class="hidden"></div>
+  <button id="secretCompleteBtn" onclick="completeMission()" class="hidden">I completed my secret mission!</button>
+
+  <!-- Mission Tracker Page -->
+  <div id="missionTracker" class="hidden">
+    <h2>🗒️ Missions</h2>
+    <p>Complete any mission below and you’ll earn a spin on the prize wheel!</p>
+    <div id="missionGrid" class="scrollable-missions"></div>
+  </div>
+
+  <!-- Spin Section (with Wheel) -->
+  <div id="spinSection" class="hidden">
+    <h2>🎡 Prize Wheel</h2>
+    <canvas id="wheelCanvas" width="300" height="300" class="hidden"></canvas>
+    <button onclick="spinWheel()">Spin the Wheel!</button>
+    <p id="prizeReveal"></p>
+  </div>
+
+  <!-- Confetti -->
+  <canvas id="confettiCanvas" class="hidden" style="position:fixed; top:0; left:0; pointer-events:none; z-index:9999;"></canvas>
+
+  <!-- Popup Prize Animation for Secret Mission -->
+  <div id="secretPrizePopup" class="hidden">
+    <div class="popup-content">
+      <h2>🎁 Secret Mission Reward</h2>
+      <p id="secretPrizeText"></p>
+      <button onclick="closeSecretPopup()">Close</button>
+    </div>
+  </div>
+
+  <!-- Admin Panel -->
+  <div id="adminPanel" class="hidden">
     <h2>Admin Panel</h2>
-    <textarea id="prizeListInput" rows="8" placeholder="Enter one prize per line"></textarea>
-    <br>
+    <textarea id="prizeListInput" rows="10" cols="30" placeholder="Enter one prize per line"></textarea>
     <button onclick="uploadPrizes()">Upload Prizes</button>
     <button onclick="resetPrizePool()">Reset Prize Pool</button>
     <div id="remainingPrizes"></div>
     <div id="claimedPrizes"></div>
   </div>
 
-  <div id="missionTracker" class="container hidden">
-    <h2>Your Missions</h2>
-    <p id="secretMission" class="hidden"></p>
-    <div id="missionList" class="scrollable-missions"></div>
-    <button id="secretCompleteBtn" onclick="completeMission()">I completed my secret mission!</button>
-  </div>
+  <!-- Return to Missions -->
+  <button id="backToMissions" class="hidden">⬅️ Back to Missions</button>
 
-  
-<canvas id="confettiCanvas" class="hidden"></canvas>
-  <div id="spinSection" class="container hidden">
-    <canvas id="wheelCanvas" width="300" height="300" class="hidden"></canvas>
-    <p id="prizeReveal"></p>
-    <button onclick="spinWheel()">Spin the Wheel!</button>
-    <br>
-    <button id="backToMissions" class="hidden">⬅️ Back to Missions</button>
-  </div>
-  
-  <div id="wheelModal" class="modal hidden">
-    <div class="modal-content">
-      <canvas id="wheelCanvas" width="300" height="300"></canvas>
-    </div>
-  </div>
-  
-  <canvas id="confettiCanvas" class="hidden"></canvas>
-
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
   <script type="module" src="main.js"></script>
-
 </body>
 </html>
