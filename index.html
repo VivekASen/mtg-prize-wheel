@@ -6,6 +6,7 @@
   <title>Vivek's Birthday</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel&family=Roboto&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
 </head>
 <body>
   <div class="container">
@@ -46,13 +47,10 @@
   <!-- Confetti canvas -->
   <canvas id="confettiCanvas"></canvas>
 
-  <!-- Gift Box Modal Animation -->
-  <div id="giftBoxModal" class="gift-modal hidden">
-    <div class="gift-box">
-      <div class="box-lid"></div>
-      <div class="box-body"></div>
-      <div id="giftPrizeText" class="prize-text"></div>
-    </div>
+  <!-- Gift Modal Animation -->
+  <div id="giftModal" class="gift-modal hidden">
+    <div id="lottieContainer" style="width: 300px; height: 300px;"></div>
+    <div class="prize-text" id="giftPrizeText"></div>
   </div>
 
   <!-- Firebase + main logic -->
