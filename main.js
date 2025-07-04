@@ -12,6 +12,7 @@ let spinVelocity = 0;
 let secretCompleted = false;
 let secretPrize = null;
 let eligibleForSecretSpin = false;
+let hasSpun = false; 
 
 const regularMissions = [
   "Command Performance – Cast your commander",
@@ -65,6 +66,10 @@ function initCanvas() {
 window.startApp = async function () {
   playerName = document.getElementById('playerName').value.trim();
   if (!playerName) return;
+  // Check if user has already spun the wheel
+  const claimedSnapshot = await get(dbRefs.claimed);
+  const claimedData = claimedSnapshot.exists() ? claimedSnapshot.val() : [];
+  hasSpun = claimedData.some(entry => entry.name === playerName);
 
   document.getElementById('nameEntry').classList.add('hidden');
 
@@ -96,41 +101,39 @@ window.startApp = async function () {
   // Load regular mission progress
   const missionList = document.getElementById('missionList');
   missionList.innerHTML = '';
-
+  
   const checksSnapshot = await get(dbRefs.playerChecks);
   const savedChecks = checksSnapshot.exists() && checksSnapshot.val()[playerName] ? checksSnapshot.val()[playerName] : [];
-
+  
   regularMissions.forEach((mission, i) => {
-    const item = document.createElement('div');
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.checked = savedChecks.includes(i);
-
-    checkbox.addEventListener('change', async () => {
-      const allCheckboxes = document.querySelectorAll('#missionList input');
+    const tile = document.createElement('div');
+    tile.className = 'mission-tile';
+    if (savedChecks.includes(i)) tile.classList.add('selected');
+    tile.innerText = mission;
+  
+    tile.addEventListener('click', async () => {
+      tile.classList.toggle('selected');
+  
+      const allTiles = document.querySelectorAll('.mission-tile');
       const updatedChecks = [];
-      allCheckboxes.forEach((cb, idx) => {
-        if (cb.checked) updatedChecks.push(idx);
+      allTiles.forEach((t, idx) => {
+        if (t.classList.contains('selected')) updatedChecks.push(idx);
       });
-
+  
       const allChecks = checksSnapshot.exists() ? checksSnapshot.val() : {};
       allChecks[playerName] = updatedChecks;
       await set(dbRefs.playerChecks, allChecks);
-
-      if (updatedChecks.length > 0) {
-        eligibleForSecretSpin = true;
+  
+      if (updatedChecks.length > 0 && !hasSpun && !secretCompleted) {
         document.getElementById('spinSection').classList.remove('hidden');
         initCanvas();
         drawWheel();
       }
     });
-
-    const label = document.createElement('label');
-    label.textContent = mission;
-    item.appendChild(checkbox);
-    item.appendChild(label);
-    missionList.appendChild(item);
+  
+    missionList.appendChild(tile);
   });
+
 
   // UI updates
   document.getElementById('secretMission').innerText = `🎯 Secret Mission: ${secretMission}`;
@@ -202,7 +205,8 @@ window.completeMission = async function () {
 };
 
 window.spinWheel = async function () {
-  if (spinning || secretCompleted) return; // prevent spin if secret already completed
+  if (spinning || hasSpun || secretCompleted) return;
+
   const snapshot = await get(dbRefs.prizes);
   if (!snapshot.exists()) return;
 
@@ -226,6 +230,8 @@ function animateWheel() {
 }
 
 async function revealPrize() {
+  hasSpun = true; // Prevent future spins
+
   const prizesSnapshot = await get(dbRefs.prizes);
   const claimedSnapshot = await get(dbRefs.claimed);
 
