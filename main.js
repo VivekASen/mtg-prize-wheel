@@ -150,7 +150,7 @@ function triggerTreasureChestAnimation(prize) {
     renderer: 'svg',
     loop: false,
     autoplay: true,
-    path: 'Animation - 1751606551314.json', // Ensure this is in the same directory or update the path
+    path: 'treasure-chest.json', // Ensure this is in the same directory or update the path
   });
 
   anim.addEventListener('complete', () => {
