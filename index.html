@@ -3,16 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Vivek’s MTG Prize Wheel</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Vivek's MTG Prize Wheel</title>
+  <link rel="stylesheet" href="style.css"/>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Roboto&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="container">
-    <h1>Vivek’s Birthday Prize Wheel</h1>
+    <h1>Vivek's Birthday Bash</h1>
 
     <div id="nameEntry">
-      <p>Welcome to the ultimate MTG birthday bash! Complete fun missions and win exciting prizes! 🎉</p>
       <input type="text" id="playerName" placeholder="Enter your name" />
       <button onclick="startApp()">Start</button>
     </div>
@@ -20,19 +19,16 @@
     <div id="secretMission" class="hidden"></div>
 
     <div id="missionTracker" class="hidden">
-      <h2>🎯 Missions</h2>
-      <p>Tap a tile to mark a completed mission and win a prize!</p>
+      <h2>Regular Missions</h2>
       <div id="missionList" class="scrollable-missions"></div>
-      <button id="secretCompleteBtn" onclick="completeMission()">✅ I completed my secret mission</button>
     </div>
 
     <div id="spinSection" class="hidden">
       <canvas id="wheelCanvas" width="400" height="400"></canvas>
+      <button onclick="spinWheel()">🎡 Spin</button>
       <div id="prizeReveal"></div>
       <canvas id="confettiCanvas" class="hidden"></canvas>
     </div>
-
-    <button id="backToMissions" class="hidden">⬅️ Back to Missions</button>
 
     <div id="adminPanel" class="hidden">
       <h2>Admin Panel</h2>
@@ -44,16 +40,16 @@
     </div>
   </div>
 
-  <!-- Modal -->
-  <div id="popupModal" class="modal hidden">
-    <div class="modal-content">
-      <h2 id="popupPrizeTitle">🎁 You Won!</h2>
-      <p id="popupPrizeText"></p>
+  <!-- Gift Box Modal -->
+  <div id="giftModal" class="gift-modal hidden">
+    <div class="gift-box">
+      <div class="box-lid"></div>
+      <div class="box-body"></div>
+      <div class="prize-text" id="giftPrizeText"></div>
     </div>
   </div>
 
-  <script src="firebaseconfig.js" type="module"></script>
-  <script src="main.js" type="module"></script>
+  <script type="module" src="main.js"></script>
   <script src="confetti.min.js"></script>
 </body>
 </html>
