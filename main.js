@@ -138,7 +138,7 @@ window.startApp = async function () {
 function triggerTreasureChestAnimation(prize) {
   const modal = document.getElementById('giftModal');
   const prizeText = document.getElementById('giftPrizeText');
-  const lottieContainer = document.getElementById('lottie-container');
+  const lottieContainer = document.getElementById('lottieContainer');
 
   if (!modal || !prizeText || !lottieContainer) return;
 
