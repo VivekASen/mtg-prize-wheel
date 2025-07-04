@@ -1,4 +1,4 @@
-import { dbRefs, set, get, update, onValue } from './firebaseconfig.js';
+import { dbRefs, set, get, update } from './firebaseconfig.js';
 
 const regularMissions = [
   "Command Performance – Cast your commander",
@@ -47,76 +47,6 @@ let playerName = '';
 let secretMission = '';
 let secretCompleted = false;
 let secretPrize = null;
-let canvas, ctx, angle = 0, spinVelocity = 0;
-
-function initCanvas() {
-  canvas = document.getElementById('wheelCanvas');
-  ctx = canvas.getContext('2d');
-  canvas.classList.remove('hidden');
-}
-
-function drawWheel(prizes) {
-  if (!canvas || !ctx || prizes.length === 0) return;
-  const radius = canvas.width / 2;
-  const segmentAngle = (2 * Math.PI) / prizes.length;
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.save();
-  ctx.translate(radius, radius);
-  ctx.rotate(angle);
-
-  prizes.forEach((prize, i) => {
-    const start = i * segmentAngle;
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.arc(0, 0, radius, start, start + segmentAngle);
-    ctx.fillStyle = i % 2 === 0 ? '#f2c94c' : '#f2994a';
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.save();
-    ctx.rotate(start + segmentAngle / 2);
-    ctx.translate(radius * 0.6, 0);
-    ctx.rotate(Math.PI / 2);
-    ctx.fillStyle = '#000';
-    ctx.font = '14px sans-serif';
-    ctx.fillText(prize.substring(0, 12), -30, 0);
-    ctx.restore();
-  });
-
-  ctx.restore();
-}
-
-function animateSpin(prizes, callback) {
-  angle = 0;
-  spinVelocity = 0.25 + Math.random() * 0.1;
-
-  function spinFrame() {
-    angle += spinVelocity;
-    spinVelocity *= 0.98;
-    drawWheel(prizes);
-
-    if (spinVelocity > 0.002) {
-      requestAnimationFrame(spinFrame);
-    } else {
-      const normalized = (2 * Math.PI - (angle % (2 * Math.PI))) % (2 * Math.PI);
-      const index = Math.floor(normalized / ((2 * Math.PI) / prizes.length));
-      callback(index);
-    }
-  }
-
-  requestAnimationFrame(spinFrame);
-}
-
-function showModalPrize(prizeText) {
-  const modal = document.getElementById('popupModal');
-  document.getElementById('popupPrizeText').innerText = prizeText;
-  modal.classList.remove('hidden');
-
-  setTimeout(() => {
-    modal.classList.add('hidden');
-  }, 4000);
-}
 
 window.startApp = async function () {
   playerName = document.getElementById('playerName').value.trim();
@@ -130,7 +60,6 @@ window.startApp = async function () {
     return;
   }
 
-  // Get secret mission
   const missionSnap = await get(dbRefs.assignedMissions);
   const allAssigned = missionSnap.exists() ? missionSnap.val() : {};
   if (!allAssigned[playerName]) {
@@ -143,7 +72,6 @@ window.startApp = async function () {
     secretMission = allAssigned[playerName];
   }
 
-  // Check if secret complete
   const secretSnap = await get(dbRefs.secretMissionCompletions);
   const secretData = secretSnap.exists() ? secretSnap.val() : {};
   secretCompleted = !!secretData[playerName];
@@ -152,7 +80,6 @@ window.startApp = async function () {
   document.getElementById('secretMission').classList.remove('hidden');
   document.getElementById('secretMission').innerText = `🎯 Secret Mission: ${secretMission}`;
 
-  // Load user completed missions
   const checkSnap = await get(dbRefs.playerChecks);
   const saved = checkSnap.exists() && checkSnap.val()[playerName] ? checkSnap.val()[playerName] : {};
   const completedIndices = Object.keys(saved).map(Number);
@@ -191,7 +118,7 @@ window.startApp = async function () {
 
       tile.classList.add('completed');
       tile.textContent += ` – 🎁 ${prize}`;
-      showPrizeWheel(prize);
+      triggerGiftBoxAnimation(prize);
     });
 
     missionList.appendChild(tile);
@@ -207,24 +134,23 @@ window.startApp = async function () {
 
   document.getElementById('backToMissions').onclick = () => {
     document.getElementById('missionTracker').classList.remove('hidden');
-    document.getElementById('spinSection').classList.add('hidden');
   };
 };
 
-function showPrizeWheel(prize) {
-  document.getElementById('spinSection').classList.remove('hidden');
-  initCanvas();
+function triggerGiftBoxAnimation(prize) {
+  const modal = document.getElementById('giftModal');
+  const prizeText = document.getElementById('giftPrizeText');
+  modal.classList.remove('hidden');
 
-  get(dbRefs.prizes).then(snapshot => {
-    const currentPrizes = snapshot.exists() ? snapshot.val() : [];
-    if (currentPrizes.length === 0) return;
+  setTimeout(() => {
+    modal.classList.add('open');
+    prizeText.innerText = `🎁 You won: ${prize}`;
+  }, 300);
 
-    drawWheel(currentPrizes);
-    animateSpin(currentPrizes, () => {
-      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-      showModalPrize(`🎉 You won: ${prize}`);
-    });
-  });
+  setTimeout(() => {
+    modal.classList.remove('open');
+    setTimeout(() => modal.classList.add('hidden'), 800);
+  }, 4000);
 }
 
 window.completeMission = async function () {
@@ -247,7 +173,7 @@ window.completeMission = async function () {
 
   document.getElementById('secretCompleteBtn').disabled = true;
   document.getElementById('secretCompleteBtn').textContent = `✅ Secret Mission Done! Prize: ${prize}`;
-  showModalPrize(`🎁 Secret Mission Prize: ${prize}`);
+  triggerGiftBoxAnimation(prize);
 };
 
 window.uploadPrizes = async function () {
