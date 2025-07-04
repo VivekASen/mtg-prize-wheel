@@ -7,213 +7,6 @@ body {
   color: #333;
 }
 
-/* ... existing styles stay unchanged until animations ... */
-
-/* Gift Box Modal Animation */
-.gift-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1001;
-}
-
-.gift-box {
-  width: 200px;
-  height: 200px;
-  position: relative;
-  animation: popUp 1.2s ease-out, shakeBox 1s infinite;
-}
-
-.box-body {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(#ff6f61, #ff4b3e);
-  border-radius: 10px;
-  position: absolute;
-  bottom: 0;
-}
-
-.box-lid {
-  width: 100%;
-  height: 50px;
-  background: #d73833;
-  border-radius: 10px 10px 0 0;
-  position: absolute;
-  top: 0;
-  animation: lidPop 2s ease-out forwards;
-}
-
-.prize-text {
-  color: white;
-  font-size: 1.2rem;
-  font-weight: bold;
-  text-align: center;
-  margin-top: 220px;
-  animation: fadeInText 2.2s ease-in-out;
-}
-
-/* Animations */
-@keyframes lidPop {
-  0% { transform: rotate(0deg) translateY(0); }
-  50% { transform: rotate(-10deg) translateY(-15px); }
-  100% { transform: rotate(-30deg) translateY(-40px); opacity: 0; }
-}
-
-@keyframes popUp {
-  0% { transform: scale(0); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes fadeInText {
-  0% { opacity: 0; transform: translateY(10px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes shakeBox {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  50% { transform: translateX(4px); }
-  75% { transform: translateX(-2px); }
-}
-
-/* Responsive Tweaks */
-@media (max-width: 600px) {
-  .gift-box {
-    width: 150px;
-    height: 150px;
-  }
-
-  .prize-text {
-    font-size: 1rem;
-    margin-top: 170px;
-  }
-
-  button {
-    padding: 1rem 1.5rem;
-    font-size: 1.2rem;
-  }
-
-  input[type="text"] {
-    font-size: 1.2rem;
-    padding: 0.8rem;
-  }
-
-  canvas#wheelCanvas {
-    max-width: 100%;
-    height: auto;
-  }
-}
-
-/* ... existing styles stay unchanged until animations ... */
-
-/* Gift Box Modal Animation */
-.gift-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1001;
-}
-
-.gift-box {
-  width: 200px;
-  height: 200px;
-  position: relative;
-  animation: popUp 1.2s ease-out, shakeBox 1s infinite;
-}
-
-.box-body {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(#ff6f61, #ff4b3e);
-  border-radius: 10px;
-  position: absolute;
-  bottom: 0;
-}
-
-.box-lid {
-  width: 100%;
-  height: 50px;
-  background: #d73833;
-  border-radius: 10px 10px 0 0;
-  position: absolute;
-  top: 0;
-  animation: lidPop 2s ease-out forwards;
-}
-
-.prize-text {
-  color: white;
-  font-size: 1.2rem;
-  font-weight: bold;
-  text-align: center;
-  margin-top: 220px;
-  animation: fadeInText 2.2s ease-in-out;
-}
-
-/* Animations */
-@keyframes lidPop {
-  0% { transform: rotate(0deg) translateY(0); }
-  50% { transform: rotate(-10deg) translateY(-15px); }
-  100% { transform: rotate(-30deg) translateY(-40px); opacity: 0; }
-}
-
-@keyframes popUp {
-  0% { transform: scale(0); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes fadeInText {
-  0% { opacity: 0; transform: translateY(10px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes shakeBox {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  50% { transform: translateX(4px); }
-  75% { transform: translateX(-2px); }
-}
-
-/* Responsive Tweaks */
-@media (max-width: 600px) {
-  .gift-box {
-    width: 150px;
-    height: 150px;
-  }
-
-  .prize-text {
-    font-size: 1rem;
-    margin-top: 170px;
-  }
-
-  button {
-    padding: 1rem 1.5rem;
-    font-size: 1.2rem;
-  }
-
-  input[type="text"] {
-    font-size: 1.2rem;
-    padding: 0.8rem;
-  }
-
-  canvas#wheelCanvas {
-    max-width: 100%;
-    height: auto;
-  }
-}
-
-
 h1, h2 {
   font-family: 'Cinzel', serif;
   color: #222;
@@ -247,32 +40,7 @@ button:hover {
   background-color: #574fd6;
 }
 
-canvas#wheelCanvas {
-  max-width: 90vw;
-  height: auto;
-  display: block;
-  margin: 1rem auto;
-  border: 2px solid #333;
-  border-radius: 10px;
-  visibility: visible;
-}
-
-canvas#confettiCanvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw !important;
-  height: 100vh !important;
-  pointer-events: none;
-  z-index: 999;
-}
-
-#prizeReveal {
-  font-size: 1.2rem;
-  margin-top: 1rem;
-  font-weight: bold;
-}
-
+/* Mission Tile Styles */
 .scrollable-missions {
   max-height: 40vh;
   overflow-y: auto;
@@ -285,10 +53,6 @@ canvas#confettiCanvas {
 
 .scrollable-missions div {
   margin-bottom: 0.5rem;
-}
-
-label {
-  margin-left: 0.5rem;
 }
 
 .mission-tile {
@@ -316,98 +80,126 @@ label {
   background-color: #a3d977;
 }
 
-/* Gift Box Prize Modal Overlay */
-#giftModal {
+/* Canvas */
+canvas#wheelCanvas {
+  max-width: 90vw;
+  height: auto;
+  display: block;
+  margin: 1rem auto;
+  border: 2px solid #333;
+  border-radius: 10px;
+  visibility: visible;
+}
+
+canvas#confettiCanvas {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0,0,0,0.7);
-  z-index: 1001;
+  width: 100vw !important;
+  height: 100vh !important;
+  pointer-events: none;
+  z-index: 999;
+}
+
+#prizeReveal {
+  font-size: 1.2rem;
+  margin-top: 1rem;
+  font-weight: bold;
+}
+
+/* Treasure Chest Modal */
+.gift-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.7);
   display: flex;
   align-items: center;
   justify-content: center;
-  visibility: hidden;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  z-index: 1001;
 }
 
-#giftModal.open {
-  visibility: visible;
-  opacity: 1;
-}
-
-.gift-box {
-  width: 200px;
-  height: 200px;
+/* Treasure Chest Styles */
+.treasure-chest {
+  width: 220px;
+  height: 140px;
   position: relative;
-  animation: popUp 0.6s ease-out;
+  animation: chestShake 1.2s ease-in-out;
 }
 
-.box-body {
+.chest-base {
   width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #ff6f61, #ff4b3e);
-  border-radius: 10px;
+  height: 100px;
+  background: linear-gradient(to bottom, #8b4513, #5c3317);
+  border: 4px solid #3e220e;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 0 15px #ffd700aa;
   position: absolute;
   bottom: 0;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
 
-.box-lid {
+.chest-lid {
   width: 100%;
-  height: 50px;
-  background: #d73833;
+  height: 60px;
+  background: linear-gradient(to bottom, #d2691e, #a0522d);
+  border: 4px solid #3e220e;
+  border-bottom: none;
   border-radius: 10px 10px 0 0;
   position: absolute;
   top: 0;
-  animation: lidPop 1.2s ease-out forwards;
-  z-index: 2;
+  animation: lidFlipOpen 1.2s ease-out forwards;
+  transform-origin: bottom center;
+  z-index: 1;
 }
 
 .prize-text {
   color: #fff;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   font-weight: bold;
   text-align: center;
-  margin-top: 220px;
-  animation: fadeInText 1.2s ease-in-out;
-  z-index: 3;
+  margin-top: 180px;
+  animation: glowText 1.4s ease-in-out;
+  text-shadow: 0 0 8px #ffd700, 0 0 14px #ffa500;
+  z-index: 2;
 }
 
 /* Animations */
-@keyframes lidPop {
-  0% { transform: rotate(0deg) translateY(0); }
-  60% { transform: rotate(-20deg) translateY(-20px); }
-  100% { transform: rotate(-30deg) translateY(-60px); opacity: 0; }
+@keyframes lidFlipOpen {
+  0%   { transform: rotateX(0); }
+  50%  { transform: rotateX(-40deg); }
+  100% { transform: rotateX(-70deg); }
 }
 
-@keyframes popUp {
-  from { transform: scale(0.5); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+@keyframes chestShake {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(2deg); }
+  40% { transform: rotate(-2deg); }
+  60% { transform: rotate(1.5deg); }
+  80% { transform: rotate(-1.5deg); }
 }
 
-@keyframes fadeInText {
-  0% { opacity: 0; transform: translateY(10px); }
+@keyframes glowText {
+  0%   { opacity: 0; transform: translateY(10px); }
   100% { opacity: 1; transform: translateY(0); }
 }
 
-/* Utility class */
+/* Utility */
 .hidden {
   display: none !important;
 }
 
-/* Responsive design */
+/* Responsive Design */
 @media (max-width: 600px) {
-  .gift-box {
-    width: 150px;
-    height: 150px;
+  .treasure-chest {
+    width: 160px;
+    height: 100px;
   }
 
   .prize-text {
     font-size: 1rem;
-    margin-top: 170px;
+    margin-top: 130px;
   }
 
   button {
