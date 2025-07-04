@@ -1,200 +1,178 @@
-import { dbRefs, set, get, update, onValue } from './firebaseconfig.js';
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getDatabase,
+  ref,
+  get,
+  set,
+  update,
+  child,
+  onValue,
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-const regularMissions = [
-  "Command Performance – Cast your commander",
-  "First Blood – Deal the first combat damage of the game",
-  "Death Touch – Destroy another creature with a spell or ability",
-  "Birthday gift – Give another player life, mana, or a card",
-  "You Shall Not Pass! – Block a creature with power 6+ and your creature survives",
-  "Political Puppetmaster – Convince two opponents to target each other",
-  "Chaos Mage – Cast a spell with cascade, storm, or chaos effects",
-  "Tribal Pride – Control 3+ creatures of the same creature type",
-  "From the Grave – Reanimate a creature",
-  "Overkill – Eliminate a player in a single turn",
-  "Taste the Rainbow – Control a permanent of each color (WUBRG)",
-  "Big Brain Play – Counter a spell or bounce something in one turn",
-  "Thematic Win – Cast a card that matches your deck’s theme",
-  "Epic Board – Control 10+ creatures on the board",
-  "Surprise Comeback – Go from lowest life to winning your pod",
-  "Ancestral Recall – Draw 3+ cards in a turn",
-  "Shahrazad – Pause the game to start a mini-game",
-  "Solitaire – Take an absurdly long turn, at least 10+ actions",
-  "Copycat – Cast a spell or ability that copies another spell",
-  "Winner winner chicken dinner – Win your pod",
-  "Participation trophy – Spin the wheel after being eliminated",
-  "Thoracle – Win the game because a card says you win",
-  "Bilbo, birthday celebrant – Have over 111 life in a game",
-  "Deep Cut – Play a card no one else at the table has seen before",
-  "Meet My Gaze – Pass priority by saying nothing and staring intensely at someone"
-];
+const firebaseConfig = {
+  apiKey: "AIzaSyCMSBZ3SjddXMatw4iwUr8T8aFMY-O-N_I",
+  authDomain: "mtg-prize-wheel.firebaseapp.com",
+  databaseURL: "https://mtg-prize-wheel-default-rtdb.firebaseio.com",
+  projectId: "mtg-prize-wheel",
+  storageBucket: "mtg-prize-wheel.firebasestorage.app",
+  messagingSenderId: "909073049822",
+  appId: "1:909073049822:web:386b014a0be75f972fba4f"
+};
 
-const secretMissions = [
-  "Secretly try to move your playmat away from everyone slowly till someone realizes...",
-  "Slowly add random tokens (not yours) to your battlefield...",
-  "Quote the flavor text of a card as if it were advice...",
-  "Make up a fake rule and get someone to believe it...",
-  "Physically inch your commander closer to another player...",
-  "Propose a table deal every turn, even absurd ones...",
-  "Use a weird object (sock, coin, etc.) as a proxy...",
-  "Commercial break - Interrupt the game with an excuse...",
-  "Try to steal drinks before getting caught...",
-  "Take stalker photos of Tony without getting caught...",
-  "The Clean up step - Tidy other people’s cards...",
-  "Sniff a playmat or deck and nod thoughtfully..."
-];
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-let playerName = '';
-let secretMission = '';
-let secretCompleted = false;
-let secretPrize = null;
+const confettiCanvas = document.getElementById("confettiCanvas");
+const confettiCtx = confettiCanvas.getContext("2d");
+confettiCanvas.width = window.innerWidth;
+confettiCanvas.height = window.innerHeight;
 
-function showGiftBoxPrize(prizeText) {
-  const modal = document.getElementById('giftBoxModal');
-  const text = document.getElementById('giftPrizeText');
-  text.innerText = `🎁 You won: ${prizeText}`;
-  modal.classList.remove('hidden');
+function launchConfetti() {
+  const duration = 2 * 1000;
+  const animationEnd = Date.now() + duration;
+  const colors = ["#ff0", "#f90", "#0cf", "#6f6", "#f66", "#f0f"];
 
-  setTimeout(() => {
-    modal.classList.add('hidden');
-  }, 5000);
-}
+  (function frame() {
+    const timeLeft = animationEnd - Date.now();
+    if (timeLeft <= 0) return;
 
-window.startApp = async function () {
-  playerName = document.getElementById('playerName').value.trim();
-  if (!playerName) return;
-
-  document.getElementById('nameEntry').classList.add('hidden');
-
-  if (playerName.toLowerCase() === 'admin') {
-    document.getElementById('adminPanel').classList.remove('hidden');
-    renderPrizeTables();
-    return;
-  }
-
-  // Get secret mission
-  const missionSnap = await get(dbRefs.assignedMissions);
-  const allAssigned = missionSnap.exists() ? missionSnap.val() : {};
-  if (!allAssigned[playerName]) {
-    const used = Object.values(allAssigned);
-    const available = secretMissions.filter(m => !used.includes(m));
-    const selected = available[Math.floor(Math.random() * available.length)] || "No mission left";
-    await update(dbRefs.assignedMissions, { [playerName]: selected });
-    secretMission = selected;
-  } else {
-    secretMission = allAssigned[playerName];
-  }
-
-  // Check if secret complete
-  const secretSnap = await get(dbRefs.secretMissionCompletions);
-  const secretData = secretSnap.exists() ? secretSnap.val() : {};
-  secretCompleted = !!secretData[playerName];
-  secretPrize = secretData[playerName]?.prize || null;
-
-  document.getElementById('secretMission').classList.remove('hidden');
-  document.getElementById('secretMission').innerText = `🎯 Secret Mission: ${secretMission}`;
-
-  // Load user completed missions
-  const checkSnap = await get(dbRefs.playerChecks);
-  const saved = checkSnap.exists() && checkSnap.val()[playerName] ? checkSnap.val()[playerName] : {};
-  const completedIndices = Object.keys(saved).map(Number);
-
-  const missionList = document.getElementById('missionList');
-  missionList.innerHTML = '';
-
-  regularMissions.forEach((mission, idx) => {
-    const tile = document.createElement('div');
-    tile.className = 'mission-tile';
-    tile.textContent = mission;
-
-    if (completedIndices.includes(idx)) {
-      tile.classList.add('completed');
-      tile.textContent += ` – 🎁 ${saved[idx]}`;
+    for (let i = 0; i < 20; i++) {
+      confettiCtx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
+      confettiCtx.fillRect(
+        Math.random() * confettiCanvas.width,
+        Math.random() * confettiCanvas.height,
+        5,
+        5
+      );
     }
 
-    tile.addEventListener('click', async () => {
-      if (tile.classList.contains('completed')) return;
+    requestAnimationFrame(frame);
+  })();
+}
 
-      const prizeSnap = await get(dbRefs.prizes);
-      if (!prizeSnap.exists()) return;
+async function fetchPrizes() {
+  const snapshot = await get(ref(db, "prizes"));
+  return snapshot.exists() ? snapshot.val() : [];
+}
 
-      const prizes = prizeSnap.val();
-      const prizeIndex = Math.floor(Math.random() * prizes.length);
-      const prize = prizes.splice(prizeIndex, 1)[0];
-
-      const claimedSnap = await get(dbRefs.claimed);
-      const claimed = claimedSnap.exists() ? claimedSnap.val() : [];
-      claimed.push({ name: playerName, prize });
-
-      saved[idx] = prize;
-      await update(dbRefs.playerChecks, { [playerName]: saved });
-      await set(dbRefs.prizes, prizes);
-      await set(dbRefs.claimed, claimed);
-
-      tile.classList.add('completed');
-      tile.textContent += ` – 🎁 ${prize}`;
-      showGiftBoxPrize(prize);
-    });
-
-    missionList.appendChild(tile);
+async function markPrizeClaimed(userId, prize) {
+  await update(ref(db, `users/${userId}/claimedPrizes`), {
+    [Date.now()]: prize,
   });
 
-  document.getElementById('missionTracker').classList.remove('hidden');
+  const prizeRef = ref(db, "prizes");
+  const snapshot = await get(prizeRef);
+  if (snapshot.exists()) {
+    const prizes = snapshot.val();
+    const index = prizes.indexOf(prize);
+    if (index !== -1) {
+      prizes.splice(index, 1);
+      await set(prizeRef, prizes);
+    }
+  }
+}
 
-  if (secretCompleted) {
-    const btn = document.getElementById('secretCompleteBtn');
-    btn.disabled = true;
-    btn.textContent = `✅ Secret Mission Done! Prize: ${secretPrize}`;
+function showTreasureChestPrize(prizeText) {
+  const modal = document.createElement("div");
+  modal.className = "gift-modal";
+
+  const chest = document.createElement("div");
+  chest.className = "treasure-chest";
+
+  const lid = document.createElement("div");
+  lid.className = "chest-lid";
+
+  const base = document.createElement("div");
+  base.className = "chest-base";
+
+  const prize = document.createElement("div");
+  prize.className = "prize-text";
+  prize.innerText = prizeText;
+
+  chest.appendChild(lid);
+  chest.appendChild(base);
+  modal.appendChild(chest);
+  modal.appendChild(prize);
+  document.body.appendChild(modal);
+
+  launchConfetti();
+
+  setTimeout(() => {
+    document.body.removeChild(modal);
+  }, 4000);
+}
+
+window.startApp = async () => {
+  const userId = localStorage.getItem("userId");
+  if (!userId) {
+    const name = prompt("Enter your name:");
+    if (!name) return;
+    localStorage.setItem("userId", name);
   }
 
-  document.getElementById('backToMissions').onclick = () => {
-    document.getElementById('missionTracker').classList.remove('hidden');
-  };
+  const missions = [
+    "Command Performance – Cast your commander",
+    "First Blood – Deal the first combat damage of the game",
+    "Death Touch – Destroy another creature with a spell or ability",
+    "Birthday gift – Give another player life, mana, or a card",
+    "You Shall Not Pass! – Block a creature with power 6+ and your creature survives",
+    "Political Puppetmaster – Convince two opponents to target each other",
+    "Chaos Mage – Cast a spell with cascade, storm, or chaos effects",
+    "Tribal Pride – Control 3+ creatures of the same creature type",
+    "From the Grave – Reanimate a creature",
+    "Overkill – Eliminate a player in a single turn",
+    "Taste the Rainbow – Control a permanent of each color (WUBRG)",
+    "Big Brain Play – Counter a spell or bounce something in one turn",
+    "Thematic Win – Cast a card that matches your deck’s theme",
+    "Epic Board – Control 10+ creatures on the board",
+    "Surprise Comeback – Go from lowest life to winning your pod",
+    "Ancestral Recall – Draw 3+ cards in a turn",
+    "Shahrazad – Pause the game to start a mini-game",
+    "Solitaire – Take an absurdly long turn, at least 10+ actions",
+    "Copycat – Cast a spell or ability that copies another spell",
+    "Winner winner chicken dinner – Win your pod",
+    "Participation trophy – Spin the wheel after being eliminated",
+    "Thoracle – Win the game because a card says you win",
+    "Bilbo, birthday celebrant – Have over 111 life in a game",
+    "Deep Cut – Play a card no one else at the table has seen before",
+    "Meet My Gaze – Pass priority by saying nothing and staring intensely at someone"
+  ];
+
+  const claimedMissionsSnap = await get(ref(db, `users/${userId}/completedMissions`));
+  const claimedMissions = claimedMissionsSnap.exists() ? claimedMissionsSnap.val() : {};
+
+  const container = document.getElementById("missionsContainer");
+  container.innerHTML = "";
+
+  const prizes = await fetchPrizes();
+
+  missions.forEach((mission, index) => {
+    const div = document.createElement("div");
+    div.className = "mission-tile";
+    div.textContent = mission;
+
+    if (claimedMissions[index]) {
+      div.classList.add("completed");
+      div.textContent = `${mission} – ${claimedMissions[index]}`;
+    } else {
+      div.onclick = async () => {
+        div.classList.add("completed");
+        div.classList.remove("selected");
+
+        const prize = prizes[Math.floor(Math.random() * prizes.length)];
+        div.textContent = `${mission} – ${prize}`;
+        div.onclick = null;
+
+        await set(ref(db, `users/${userId}/completedMissions/${index}`), prize);
+        await markPrizeClaimed(userId, prize);
+        showTreasureChestPrize(prize);
+      };
+    }
+
+    container.appendChild(div);
+  });
 };
 
-window.completeMission = async function () {
-  if (secretCompleted) return;
-
-  const prizeSnap = await get(dbRefs.prizes);
-  if (!prizeSnap.exists()) return;
-
-  const prizes = prizeSnap.val();
-  const prizeIndex = Math.floor(Math.random() * prizes.length);
-  const prize = prizes.splice(prizeIndex, 1)[0];
-
-  const claimedSnap = await get(dbRefs.claimed);
-  const claimed = claimedSnap.exists() ? claimedSnap.val() : [];
-  claimed.push({ name: playerName, prize });
-
-  await set(dbRefs.prizes, prizes);
-  await set(dbRefs.claimed, claimed);
-  await update(dbRefs.secretMissionCompletions, { [playerName]: { prize } });
-
-  document.getElementById('secretCompleteBtn').disabled = true;
-  document.getElementById('secretCompleteBtn').textContent = `✅ Secret Mission Done! Prize: ${prize}`;
-  showGiftBoxPrize(prize);
+window.onload = () => {
+  window.startApp();
 };
-
-window.uploadPrizes = async function () {
-  const raw = document.getElementById('prizeListInput').value;
-  const newPrizes = raw.split('\n').map(x => x.trim()).filter(Boolean);
-  await set(dbRefs.prizes, newPrizes);
-  await set(dbRefs.claimed, []);
-  renderPrizeTables();
-};
-
-window.resetPrizePool = async function () {
-  await set(dbRefs.prizes, []);
-  await set(dbRefs.claimed, []);
-  document.getElementById('prizeListInput').value = '';
-  renderPrizeTables();
-};
-
-async function renderPrizeTables() {
-  const prizesSnap = await get(dbRefs.prizes);
-  const claimedSnap = await get(dbRefs.claimed);
-  const prizes = prizesSnap.exists() ? prizesSnap.val() : [];
-  const claimed = claimedSnap.exists() ? claimedSnap.val() : [];
-
-  document.getElementById('remainingPrizes').innerHTML = `<h3>Remaining Prizes (${prizes.length})</h3><ul>${prizes.map(p => `<li>${p}</li>`).join('')}</ul>`;
-  document.getElementById('claimedPrizes').innerHTML = `<h3>Claimed Prizes (${claimed.length})</h3><ul>${claimed.map(c => `<li>${c.name} won ${c.prize}</li>`).join('')}</ul>`;
-}
