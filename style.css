@@ -117,7 +117,17 @@ label {
   user-select: none;
 }
 
+.mission-tile:hover {
+  background-color: #dceffc;
+}
+
+.mission-tile.completed {
+  background-color: #d3d3d3;
+  cursor: not-allowed;
+}
+
 .mission-tile.selected {
   background-color: #a3d977;
 }
+
 
