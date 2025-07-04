@@ -40,7 +40,32 @@ button:hover {
   background-color: #574fd6;
 }
 
-/* Mission Tile Styles */
+canvas#wheelCanvas {
+  max-width: 90vw;
+  height: auto;
+  display: block;
+  margin: 1rem auto;
+  border: 2px solid #333;
+  border-radius: 10px;
+  visibility: visible;
+}
+
+canvas#confettiCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+  pointer-events: none;
+  z-index: 999;
+}
+
+#prizeReveal {
+  font-size: 1.2rem;
+  margin-top: 1rem;
+  font-weight: bold;
+}
+
 .scrollable-missions {
   max-height: 40vh;
   overflow-y: auto;
@@ -53,6 +78,10 @@ button:hover {
 
 .scrollable-missions div {
   margin-bottom: 0.5rem;
+}
+
+label {
+  margin-left: 0.5rem;
 }
 
 .mission-tile {
@@ -80,48 +109,29 @@ button:hover {
   background-color: #a3d977;
 }
 
-/* Canvas */
-canvas#wheelCanvas {
-  max-width: 90vw;
-  height: auto;
-  display: block;
-  margin: 1rem auto;
-  border: 2px solid #333;
-  border-radius: 10px;
-  visibility: visible;
-}
-
-canvas#confettiCanvas {
+/* Treasure Chest Modal Overlay */
+#giftModal {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw !important;
-  height: 100vh !important;
-  pointer-events: none;
-  z-index: 999;
-}
-
-#prizeReveal {
-  font-size: 1.2rem;
-  margin-top: 1rem;
-  font-weight: bold;
-}
-
-/* Treasure Chest Modal */
-.gift-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.7);
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 1001;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1001;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
-/* Treasure Chest Styles */
+#giftModal.open {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Treasure Chest Container */
 .treasure-chest {
   width: 220px;
   height: 140px;
@@ -129,6 +139,7 @@ canvas#confettiCanvas {
   animation: chestShake 1.2s ease-in-out;
 }
 
+/* Chest Base */
 .chest-base {
   width: 100%;
   height: 100px;
@@ -140,6 +151,7 @@ canvas#confettiCanvas {
   bottom: 0;
 }
 
+/* Chest Lid */
 .chest-lid {
   width: 100%;
   height: 60px;
@@ -154,6 +166,7 @@ canvas#confettiCanvas {
   z-index: 1;
 }
 
+/* Glowing Prize Text */
 .prize-text {
   color: #fff;
   font-size: 1.3rem;
@@ -162,10 +175,10 @@ canvas#confettiCanvas {
   margin-top: 180px;
   animation: glowText 1.4s ease-in-out;
   text-shadow: 0 0 8px #ffd700, 0 0 14px #ffa500;
-  z-index: 2;
+  z-index: 3;
 }
 
-/* Animations */
+/* Keyframes */
 @keyframes lidFlipOpen {
   0%   { transform: rotateX(0); }
   50%  { transform: rotateX(-40deg); }
@@ -190,7 +203,7 @@ canvas#confettiCanvas {
   display: none !important;
 }
 
-/* Responsive Design */
+/* Responsive design */
 @media (max-width: 600px) {
   .treasure-chest {
     width: 160px;
