@@ -1,5 +1,8 @@
 import { dbRefs, set, get, update } from './firebaseconfig.js';
 
+const WEBHOOK_SPIN = "https://discord.com/api/webhooks/1391118135368876212/prrtI5HRyehenr30Hv4ZONxZ7WH41e1meW0Z-_r7xjL0K1IEkt9IX1jluSWH0diQTYPe";   // for spin notification
+const WEBHOOK_PRIZE = "https://discord.com/api/webhooks/1389982891068625048/6fALsoRxeELHOP2vFKRpgaSRPlyNncnIDG5EejlNp6eI177xa8g9UeGLGl_llCLXBoFx"; // for prize reveal
+
 const regularMissions = [
   "Command Performance – Cast your commander",
   "First Blood – Deal the first combat damage of the game",
@@ -130,6 +133,9 @@ window.startApp = async function () {
       tile.classList.add('completed');
       tile.textContent += ` – 🎁 ${prize}`;
       triggerTreasureChestAnimation(prize);
+
+      await sendToSpinWebhook(`🎯 ${playerName} completed a mission: "${mission}"`);
+      await sendToPrizeWebhook(`🎁 ${playerName} won a prize: **${prize}**`);
     });
 
     missionList.appendChild(tile);
@@ -143,6 +149,9 @@ window.startApp = async function () {
       btn.disabled = true;
       btn.textContent = `✅ Secret Mission Done! Prize: ${secretPrize}`;
     }
+
+    await sendToSpinWebhook(`🕵️‍♂️ ${playerName} completed their secret mission!`);
+    await sendToPrizeWebhook(`🎁 ${playerName} earned a secret prize: **${prize}** 🎉`);
   }
   
   localStorage.setItem('playerName', playerName);
@@ -175,6 +184,30 @@ function triggerTreasureChestAnimation(prize) {
     modal.classList.remove('open');
     setTimeout(() => modal.classList.add('hidden'), 800);
   }, 5000);
+}
+
+async function sendToSpinWebhook(message) {
+  try {
+    await fetch(WEBHOOK_SPIN, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: message }),
+    });
+  } catch (error) {
+    console.error("Failed to send spin webhook:", error);
+  }
+}
+
+async function sendToPrizeWebhook(message) {
+  try {
+    await fetch(WEBHOOK_PRIZE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: message }),
+    });
+  } catch (error) {
+    console.error("Failed to send prize webhook:", error);
+  }
 }
 
 window.completeMission = async function () {
