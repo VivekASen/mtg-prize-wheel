@@ -68,6 +68,8 @@ window.startApp = async function () {
     return;
   }
 
+  document.getElementById('logoutBtn').classList.remove('hidden');
+
   const missionSnap = await get(dbRefs.assignedMissions);
   const allAssigned = missionSnap.exists() ? missionSnap.val() : {};
   if (!allAssigned[playerName]) {
