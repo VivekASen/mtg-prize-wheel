@@ -56,6 +56,9 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+document.getElementById('userPanel').classList.remove('hidden');
+document.getElementById('loggedInName').innerText = playerName;
+
 window.startApp = async function () {
   playerName = document.getElementById('playerName').value.trim();
   if (!playerName) return;
@@ -68,7 +71,6 @@ window.startApp = async function () {
     return;
   }
 
-  document.getElementById('logoutBtn').classList.remove('hidden');
 
   const missionSnap = await get(dbRefs.assignedMissions);
   const allAssigned = missionSnap.exists() ? missionSnap.val() : {};
