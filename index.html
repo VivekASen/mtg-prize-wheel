@@ -19,6 +19,8 @@
       <button onclick="startApp()">Enter</button>
     </div>
 
+    <button id="logoutBtn" class="hidden" onclick="logout()">Logout</button>
+
     <div id="adminPanel" class="hidden">
       <h2>Admin Panel</h2>
       <textarea id="prizeListInput" rows="10" placeholder="Enter prizes, one per line"></textarea><br />
@@ -37,6 +39,7 @@
       <div id="secretMission" class="hidden"></div>
       <button id="secretCompleteBtn" onclick="completeMission()">I completed the secret mission!</button>
     </div>
+    
 
     <div id="spinSection" class="hidden">
       <canvas id="wheelCanvas" width="300" height="300"></canvas>
