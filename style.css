@@ -192,33 +192,55 @@ label {
 #userPanel {
   position: fixed;
   top: 10px;
-  right: 20px;
+  right: 10px;
   display: flex;
   align-items: center;
-  background: #f0f0f0;
-  padding: 6px 10px;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  background: #ffffff;
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   z-index: 1002;
 }
 
 #userPanel span {
-  margin-right: 8px;
-  font-weight: bold;
+  margin-right: 6px;
+  font-weight: 500;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 #logoutBtn {
-  background: #e74c3c;
-  color: white;
+  background: transparent;
+  color: #555;
   border: none;
-  font-size: 0.9rem;
-  padding: 4px 8px;
-  border-radius: 6px;
+  font-size: 1.1rem;
+  padding: 0;
+  margin: 0;
   cursor: pointer;
 }
 
 #logoutBtn:hover {
-  background: #c0392b;
+  color: #e74c3c;
 }
 
+/* Mobile adjustments */
+@media (max-width: 600px) {
+  #userPanel {
+    top: auto;
+    bottom: 10px;
+    right: 10px;
+    font-size: 0.8rem;
+    padding: 4px 6px;
+  }
+
+  #userPanel span {
+    display: none; /* hide name on small screens */
+  }
+
+  #logoutBtn {
+    font-size: 1.3rem;
+  }
+}
