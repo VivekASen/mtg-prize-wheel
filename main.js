@@ -52,12 +52,10 @@ window.addEventListener('DOMContentLoaded', () => {
   const savedName = localStorage.getItem('playerName');
   if (savedName) {
     document.getElementById('playerName').value = savedName;
-    window.startApp(); // Auto-start with saved session
+    document.getElementById('currentUserName').innerText = savedName;
+    startApp(); // Auto-start with saved session
   }
 });
-
-document.getElementById('userPanel').classList.remove('hidden');
-document.getElementById('loggedInName').innerText = playerName;
 
 window.startApp = async function () {
   playerName = document.getElementById('playerName').value.trim();
@@ -244,7 +242,8 @@ async function renderPrizeTables() {
   document.getElementById('claimedPrizes').innerHTML = `<h3>Claimed Prizes (${claimed.length})</h3><ul>${claimed.map(c => `<li>${c.name} won ${c.prize}</li>`).join('')}</ul>`;
 }
 
-window.logout = function () {
+function logout() {
   localStorage.removeItem('playerName');
   location.reload(); // Reload to show login again
-};
+}
+window.logout = logout;
