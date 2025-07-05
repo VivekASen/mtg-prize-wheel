@@ -111,19 +111,19 @@ label {
 
 /* 🔥 Lottie Treasure Chest Modal */
 #giftModal {
+  display: flex;
+  flex-direction: column; /* stack vertically */
+  align-items: center;
+  justify-content: center;
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.7);
-  z-index: 1001;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  visibility: hidden;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 9999;
+  padding: 20px;
+}
 }
 
 #giftModal.open {
@@ -137,12 +137,27 @@ label {
   margin-bottom: 1rem;
 }
 
+.gift-modal {
+  display: flex;
+  flex-direction: column; /* stack vertically */
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 9999;
+  padding: 20px;
+}
+
 .prize-text {
   color: #fff;
-  font-size: 1.3rem;
-  font-weight: bold;
+  font-size: 1.5rem;
+  font-family: 'Cinzel', serif;
+  margin-bottom: 16px; /* space between text and animation */
   text-align: center;
-  animation: fadeInText 1s ease-in-out;
 }
 
 /* Fade-in animation for prize */
