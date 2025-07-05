@@ -48,6 +48,14 @@ let secretMission = '';
 let secretCompleted = false;
 let secretPrize = null;
 
+window.addEventListener('DOMContentLoaded', () => {
+  const savedName = localStorage.getItem('playerName');
+  if (savedName) {
+    document.getElementById('playerName').value = savedName;
+    window.startApp(); // Auto-start with saved session
+  }
+});
+
 window.startApp = async function () {
   playerName = document.getElementById('playerName').value.trim();
   if (!playerName) return;
@@ -133,6 +141,9 @@ window.startApp = async function () {
       btn.textContent = `✅ Secret Mission Done! Prize: ${secretPrize}`;
     }
   }
+  
+  localStorage.setItem('playerName', playerName);
+
 };
 
 function triggerTreasureChestAnimation(prize) {
@@ -226,3 +237,8 @@ async function renderPrizeTables() {
   document.getElementById('remainingPrizes').innerHTML = `<h3>Remaining Prizes (${prizes.length})</h3><ul>${prizes.map(p => `<li>${p}</li>`).join('')}</ul>`;
   document.getElementById('claimedPrizes').innerHTML = `<h3>Claimed Prizes (${claimed.length})</h3><ul>${claimed.map(c => `<li>${c.name} won ${c.prize}</li>`).join('')}</ul>`;
 }
+
+window.logout = function () {
+  localStorage.removeItem('playerName');
+  location.reload(); // Reload to show login again
+};
