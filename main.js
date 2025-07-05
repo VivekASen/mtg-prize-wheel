@@ -204,6 +204,19 @@ window.resetPrizePool = async function () {
   renderPrizeTables();
 };
 
+window.resetAllPlayerData = async function () {
+  const confirmed = confirm("Are you sure you want to reset all player data and missions? This cannot be undone.");
+  if (!confirmed) return;
+
+  await set(dbRefs.playerChecks, {});
+  await set(dbRefs.assignedMissions, {});
+  await set(dbRefs.secretMissionCompletions, {});
+  await set(dbRefs.claimed, []);
+  alert("All player data, secret missions, and claimed prizes have been reset.");
+  renderPrizeTables();
+};
+
+
 async function renderPrizeTables() {
   const prizesSnap = await get(dbRefs.prizes);
   const claimedSnap = await get(dbRefs.claimed);
