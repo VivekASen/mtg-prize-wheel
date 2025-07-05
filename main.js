@@ -140,6 +140,8 @@ function triggerTreasureChestAnimation(prize) {
   const prizeText = document.getElementById('giftPrizeText');
   const chest = document.getElementById('chestAnimation');
 
+  prizeText.innerText = ''; // Clear any previous prize text
+
   // Reset animation
   chest.seek(0);
   chest.play();
