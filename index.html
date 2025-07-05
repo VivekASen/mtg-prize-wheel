@@ -10,6 +10,11 @@
 </head>
 <body>
   <div class="container">
+    <div id="userPanel" class="hidden">
+      <span id="loggedInName"></span>
+      <button id="logoutBtn" onclick="logout()">🚪</button>
+    </div>
+
     <h1>🎉 Vivek's Birthday Prize Wheel 🎉</h1>
 
     <div id="nameEntry">
@@ -18,8 +23,6 @@
       <br />
       <button onclick="startApp()">Enter</button>
     </div>
-
-    <button id="logoutBtn" class="hidden" onclick="logout()">Logout</button>
 
     <div id="adminPanel" class="hidden">
       <h2>Admin Panel</h2>
