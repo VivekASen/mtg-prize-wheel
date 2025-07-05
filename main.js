@@ -61,6 +61,7 @@ document.getElementById('loggedInName').innerText = playerName;
 
 window.startApp = async function () {
   playerName = document.getElementById('playerName').value.trim();
+  document.getElementById('currentUserName').textContent = playerName;
   if (!playerName) return;
 
   document.getElementById('nameEntry').classList.add('hidden');
@@ -147,6 +148,7 @@ window.startApp = async function () {
   }
   
   localStorage.setItem('playerName', playerName);
+  document.getElementById('userPanel').classList.remove('hidden');
 
 };
 
