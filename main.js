@@ -60,8 +60,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
 window.startApp = async function () {
   playerName = document.getElementById('playerName').value.trim();
-  document.getElementById('currentUserName').textContent = playerName;
   if (!playerName) return;
+  playerName = playerName.toLowerCase(); // Normalize to lowercase
+  document.getElementById('currentUserName').textContent = document.getElementById('playerName').value.trim();
 
   document.getElementById('nameEntry').classList.add('hidden');
 
