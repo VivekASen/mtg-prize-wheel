@@ -242,7 +242,10 @@ window.completeMission = async function () {
     [playerName]: { prize: selectedPrizes }
   });
 
-  // Update button
+  // Show animation for prizes
+  triggerTreasureChestAnimation(selectedPrizes);
+
+  // Update secret mission button
   const btn = document.getElementById('secretCompleteBtn');
   if (btn) {
     btn.disabled = true;
@@ -252,9 +255,6 @@ window.completeMission = async function () {
   // Fire webhook
   await sendToSpinWebhook(`🕵️‍♂️ ${playerName} completed their secret mission!`);
   await sendToPrizeWebhook(`🎁 ${playerName} earned **3 prizes** for their secret mission:\n• ${selectedPrizes.join('\n• ')}`);
-
-  // Show animation for first prize only
-  triggerTreasureChestAnimation(selectedPrizes);
 
   secretCompleted = true;
   secretPrize = selectedPrizes;
