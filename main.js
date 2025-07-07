@@ -8,43 +8,41 @@ const regularMissions = [
   "First Blood – Deal the first combat damage of the game",
   "Death Touch – Destroy another creature with a spell or ability",
   "Birthday gift – Give another player life, mana, or a card",
-  "You Shall Not Pass! – Block a creature with power 6+ and your creature survives",
-  "Political Puppetmaster – Convince two opponents to target each other",
-  "Chaos Mage – Cast a spell with cascade, storm, or chaos effects",
+  "You Shall Not Pass! – Block a creature with power 6+",
+  "Political Puppetmaster – Convince an opponent to target another opponent",
+  "Lets make a deal - Make a deal with an opponent",
+  "Chaos Mage – Cast a spell with cascade, storm, or any chaos effect",
   "Tribal Pride – Control 3+ creatures of the same creature type",
-  "From the Grave – Reanimate a creature",
-  "Overkill – Eliminate a player in a single turn",
+  "From the Grave – Reanimate a permanent or spell",
+  "Overkill – Eliminate a player/Deliver the final blow",
   "Taste the Rainbow – Control a permanent of each color (WUBRG)",
-  "Big Brain Play – Counter a spell or bounce something in one turn",
-  "Thematic Win – Cast a card that matches your deck’s theme",
+  "Big Brain Play – Counter a spell or bounce something",
+  "Flavor Win – Use a card with art or flavor text that fits your deck’s theme",
   "Epic Board – Control 10+ creatures on the board",
-  "Surprise Comeback – Go from lowest life to winning your pod",
   "Ancestral Recall – Draw 3+ cards in a turn",
   "Shahrazad – Pause the game to start a mini-game",
-  "Solitaire – Take an absurdly long turn, at least 10+ actions",
+  "Solitaire – Take a long turn, at least 6+ actions",
   "Copycat – Cast a spell or ability that copies another spell",
-  "Winner winner chicken dinner – Win your pod",
-  "Participation trophy – Spin the wheel after being eliminated",
+  "Last man standing – Win your pod",
+  "Participation trophy – Lose your pod",
   "Thoracle – Win the game because a card says you win",
   "Bilbo, birthday celebrant – Have over 111 life in a game",
   "Deep Cut – Play a card no one else at the table has seen before",
-  "Meet My Gaze – Pass priority by saying nothing and staring intensely at someone"
 ];
 
 const secretMissions = [
-  "Secretly try to move your playmat away from everyone slowly till someone realizes...",
-  "Slowly add random tokens (not yours) to your battlefield...",
-  "Quote the flavor text of a card as if it were advice...",
-  "Make up a fake rule and get someone to believe it...",
-  "Physically inch your commander closer to another player...",
-  "Propose a table deal every turn, even absurd ones...",
-  "Use a weird object (sock, coin, etc.) as a proxy...",
-  "Commercial break - Interrupt the game with an excuse...",
-  "Try to steal drinks before getting caught...",
-  "Take stalker photos of Tony without getting caught...",
-  "The Clean up step - Tidy other people’s cards...",
-  "Sniff a playmat or deck and nod thoughtfully..."
-];
+  "Playmat Drift - Secretly move your playmat farther and farther away…until someone notices. Mission is complete if you move 5 inches unnoticed.",
+  "Token Economy - Sneak at least 3 tokens onto your battlefield without getting caught",
+  "Rules Lawyer (Intern) - Invent a totally fake rule and convince someone it’s legit",
+  "Commander Creep - Slowly inch your commander at least 3 inches onto an opponent’s board unnoticed. If you're caught you have to start again.",
+  "Deal or No Deal - Propose a table deal every turn for at least 3 turns",
+  "This burger is a Myr - Use a weird object (sock, coin, etc.) as a proxy or token",
+  "Sip Happens - Try to steal at least 2 drinks onto your playmat",
+  "Vivek Cam - Take at least 3 stalker photos of Vivek without getting caught. One has to be while he's drinking something.",
+  "The Clean up step - Tidy at least 5 items total (cards, dice, tokens, etc.) from at least 2 different players’ boards during your own turns — without being asked or told to stop.",
+  "Stare Tactics – Maintain unbroken, silent eye contact with another player for their entire turn; complete it twice without getting called out",
+  "Scent of Victory - Lean in and dramatically sniff someone’s deck or playmat. Then nod like you know something they don’t."
+]; 
 
 let playerName = '';
 let secretMission = '';
@@ -159,27 +157,27 @@ window.startApp = async function () {
 
 };
 
-function triggerTreasureChestAnimation(prize) {
+function triggerTreasureChestAnimation(prizes) {
   const modal = document.getElementById('giftModal');
   const prizeText = document.getElementById('giftPrizeText');
   const chest = document.getElementById('chestAnimation');
 
-  prizeText.innerText = ''; // Clear any previous prize text
-
-  // Reset animation
+  prizeText.innerText = ''; // Clear previous content
   chest.seek(0);
   chest.play();
 
-  // Show modal
   modal.classList.remove('hidden');
   modal.classList.add('open');
 
-  // Show prize after short delay
+  // Format the prize text
+  const prizeLines = Array.isArray(prizes)
+    ? prizes.map(p => `🎁 ${p}`).join('\n')
+    : `🎁 ${prizes}`;
+
   setTimeout(() => {
-    prizeText.innerText = `🎁 You won: ${prize}`;
+    prizeText.innerText = prizeLines;
   }, 2000);
 
-  // Hide after a bit
   setTimeout(() => {
     modal.classList.remove('open');
     setTimeout(() => modal.classList.add('hidden'), 800);
