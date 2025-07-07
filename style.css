@@ -109,7 +109,7 @@ label {
   background-color: #a3d977;
 }
 
-/* 🔥 Lottie Treasure Chest Modal */
+/* Lottie Treasure Chest Modal */
 #giftModal {
   display: flex;
   flex-direction: column; /* stack vertically */
@@ -277,4 +277,12 @@ label {
 .welcome-box p {
   margin: 10px 0;
   line-height: 1.5;
+}
+
+.reminder-text {
+  font-size: 0.9rem;
+  color: #333;
+  margin-top: -10px;
+  margin-bottom: 10px;
+  font-style: italic;
 }
