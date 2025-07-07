@@ -259,3 +259,22 @@ label {
     font-size: 1.3rem;
   }
 }
+
+.welcome-box {
+  background-color: #f9f9f9;
+  border: 2px dashed #ccc;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  font-family: 'Roboto', sans-serif;
+}
+
+.welcome-box h2 {
+  margin-top: 0;
+  font-family: 'Cinzel', serif;
+}
+
+.welcome-box p {
+  margin: 10px 0;
+  line-height: 1.5;
+}
