@@ -214,26 +214,52 @@ window.completeMission = async function () {
   const prizeSnap = await get(dbRefs.prizes);
   if (!prizeSnap.exists()) return;
 
-  const prizes = prizeSnap.val();
-  const prizeIndex = Math.floor(Math.random() * prizes.length);
-  const prize = prizes.splice(prizeIndex, 1)[0];
+  let prizes = prizeSnap.val();
+  if (prizes.length < 3) {
+    alert("Not enough prizes left to claim 3 rewards!");
+    return;
+  }
 
+  // Draw 3 prizes
+  const selectedPrizes = [];
+  for (let i = 0; i < 3; i++) {
+    const prizeIndex = Math.floor(Math.random() * prizes.length);
+    const prize = prizes.splice(prizeIndex, 1)[0];
+    selectedPrizes.push(prize);
+  }
+
+  // Record as claimed
   const claimedSnap = await get(dbRefs.claimed);
   const claimed = claimedSnap.exists() ? claimedSnap.val() : [];
-  claimed.push({ name: playerName, prize });
+
+  selectedPrizes.forEach(p => {
+    claimed.push({ name: playerName, prize: p });
+  });
 
   await set(dbRefs.prizes, prizes);
   await set(dbRefs.claimed, claimed);
-  await update(dbRefs.secretMissionCompletions, { [playerName]: { prize } });
+  await update(dbRefs.secretMissionCompletions, {
+    [playerName]: { prize: selectedPrizes }
+  });
 
+  // Update button
   const btn = document.getElementById('secretCompleteBtn');
   if (btn) {
     btn.disabled = true;
-    btn.textContent = `✅ Secret Mission Done! Prize: ${prize}`;
+    btn.textContent = `✅ Secret Mission Done! Prizes: ${selectedPrizes.join(', ')}`;
   }
 
-  triggerTreasureChestAnimation(prize);
+  // Fire webhook
+  await sendToSpinWebhook(`🕵️‍♂️ ${playerName} completed their secret mission!`);
+  await sendToPrizeWebhook(`🎁 ${playerName} earned **3 prizes** for their secret mission:\n• ${selectedPrizes.join('\n• ')}`);
+
+  // Show animation for first prize only
+  triggerTreasureChestAnimation(selectedPrizes[0]);
+
+  secretCompleted = true;
+  secretPrize = selectedPrizes;
 };
+
 
 window.uploadPrizes = async function () {
   const raw = document.getElementById('prizeListInput').value;
