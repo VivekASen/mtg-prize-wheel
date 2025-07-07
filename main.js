@@ -37,7 +37,7 @@ const secretMissions = [
   "Commander Creep - Slowly inch your commander at least 3 inches onto an opponent’s board unnoticed. If you're caught you have to start again.",
   "Deal or No Deal - Propose a table deal every turn for at least 3 turns",
   "This burger is a Myr - Use a weird object (sock, coin, etc.) as a proxy or token",
-  "Sip Happens - Try to steal at least 2 drinks onto your playmat",
+  "Sip Happens - Steal at least 2 drinks onto your playmat without someone calling you out.",
   "Vivek Cam - Take at least 3 stalker photos of Vivek without getting caught. One has to be while he's drinking something.",
   "The Clean up step - Tidy at least 5 items total (cards, dice, tokens, etc.) from at least 2 different players’ boards during your own turns — without being asked or told to stop.",
   "Stare Tactics – Maintain unbroken, silent eye contact with another player for their entire turn; complete it twice without getting called out",
@@ -254,7 +254,7 @@ window.completeMission = async function () {
   await sendToPrizeWebhook(`🎁 ${playerName} earned **3 prizes** for their secret mission:\n• ${selectedPrizes.join('\n• ')}`);
 
   // Show animation for first prize only
-  triggerTreasureChestAnimation(selectedPrizes[0]);
+  triggerTreasureChestAnimation(selectedPrizes);
 
   secretCompleted = true;
   secretPrize = selectedPrizes;
