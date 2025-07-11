@@ -317,7 +317,7 @@ window.assignFinalPrizeNumbers = async function () {
   }
 
   // Numbers 1–19
-  const availableNumbers = Array.from({ length: 19 }, (_, i) => i + 1);
+  const availableNumbers = Array.from({ length: 22 }, (_, i) => i + 1);
 
   // Create a shuffled pool of numbers
   const numberPool = [];
