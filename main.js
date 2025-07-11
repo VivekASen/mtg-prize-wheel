@@ -303,6 +303,64 @@ async function renderPrizeTables() {
   document.getElementById('claimedPrizes').innerHTML = `<h3>Claimed Prizes (${claimed.length})</h3><ul>${claimed.map(c => `<li>${c.name} won ${c.prize}</li>`).join('')}</ul>`;
 }
 
+window.assignFinalPrizeNumbers = async function () {
+  const playerSnap = await get(dbRefs.playerChecks);
+  if (!playerSnap.exists()) {
+    alert("No players found.");
+    return;
+  }
+
+  const players = Object.keys(playerSnap.val());
+  if (players.length === 0) {
+    alert("No players found.");
+    return;
+  }
+
+  // Numbers 1–19
+  const availableNumbers = Array.from({ length: 19 }, (_, i) => i + 1);
+
+  // Create a shuffled pool of numbers
+  const numberPool = [];
+  while (numberPool.length < players.length * 2) {
+    numberPool.push(...shuffleArray(availableNumbers));
+  }
+
+  const assignments = {};
+  players.forEach(player => {
+    assignments[player] = numberPool.splice(0, 2);
+  });
+
+  await set(dbRefs.finalPrizeNumbers, assignments);
+  renderFinalPrizeAssignments(assignments);
+};
+
+async function renderFinalPrizeAssignments(assignments) {
+  if (!assignments) {
+    const snap = await get(dbRefs.finalPrizeNumbers);
+    if (!snap.exists()) return;
+    assignments = snap.val();
+  }
+
+  const output = Object.entries(assignments)
+    .map(([name, nums]) => `<li>${name}: ${nums.join(', ')}</li>`)
+    .join('');
+
+  document.getElementById('finalPrizeAssignments').innerHTML = `
+    <h3>Final Prize Number Assignments</h3>
+    <ul>${output}</ul>
+  `;
+}
+
+function shuffleArray(arr) {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+
 function logout() {
   localStorage.removeItem('playerName');
   location.reload(); // Reload to show login again
