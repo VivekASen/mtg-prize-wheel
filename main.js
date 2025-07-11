@@ -28,6 +28,9 @@ const regularMissions = [
   "Thoracle – Win the game because a card says you win",
   "Bilbo, birthday celebrant – Have over 111 life in a game",
   "Deep Cut – Play a card no one else at the table has seen before",
+  "Toxic Triumph - Kill someone with poison",
+  "One punch man - Kill someone with commander damage",
+  "Decked out - Mill an opponent or yourself completely of their library"
 ];
 
 const secretMissions = [
